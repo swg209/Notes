@@ -82,10 +82,51 @@ Second, the data points are embedded into a low-dimensionalspace trying to prese
 
 ![](symbol.png)
 
-#### 问题
+#### Local deformations and scale separation
+
+##### 主旨
+
+- 说明局部变换的稳定性原则
+
+>In other words, whereaslong-range dependencies  indeed exist in natural images andare critical to object recognition, they can be captured anddown-sampled at different scales. This principle of stabilityto local deformations has been exploited in the computervision community in models other than CNNs, for instance,deformable parts models[58]
+
+##### 问题
 
 - 何谓local deformation,local不local有什么区别。何谓local translations，与前者有什么区别
 
-### 正文
+#### Convolutional neural networks
 
-公式5之前，它都是介绍一些基本的概念。到了公式5，他说，我们可以下采样成分辨率比较低的？，但是一样能够得到sufficient statistics。公式5定义了Y，是由
+##### 主旨
+
+- 讲了下CNN，其优点 ——
+- geometric priors
+- stationarity and local deformation priors
+
+##### 问题
+
+- 卷积的数学表示以及其运算性质
+
+## IV The Geometry of manifolds and graphs
+
+#### Manifolds
+
+- > Roughly, a manifold is a space that is locally Euclidean
+- 说，tangent space的inner product是一个$R$，并且将这种inner product成为Riemannian metric
+- 一个带这种metric的manifolds称为Riemannian manifolds
+- tangent vector field:
+  >
+
+
+##### 问题
+
+- manifolds里面说的inner product指的是谁跟谁？自己跟自己？得出来的结果是啥？
+
+#### Calculus on manifolds
+
+![](.png)
+
+$dx$ : d-dimensonal volum element induced by the Riemannian metric 黎曼空间里面的d-dim体积元素
+
+$L^2(X)$ : Hilbert spaces of scalar
+
+$L^2(TX)$ : vector fields on manifolds
