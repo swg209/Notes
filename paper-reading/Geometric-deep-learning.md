@@ -110,23 +110,29 @@ Second, the data points are embedded into a low-dimensionalspace trying to prese
 
 #### Manifolds
 
-- > Roughly, a manifold is a space that is locally Euclidean
-- 说，tangent space的inner product是一个$R$，并且将这种inner product成为Riemannian metric
+- Manifolds，流形，局部具有欧几里得性质的空间（想想地球，局部是一个平面，感受不到弯曲）。
 - 一个带这种metric的manifolds称为Riemannian manifolds
-- tangent vector field:
-  >
-
+- tangent vector field : 表示成$T~xX$，由一切切向量组成的空间。
 
 ##### 问题
 
 - manifolds里面说的inner product指的是谁跟谁？自己跟自己？得出来的结果是啥？
+  - 已解决，
 
 #### Calculus on manifolds
 
 ![](.png)
+
+$f : X -> R$ : 在manifold里面的标量空间
+> A scalar fieldis a smooth realfunctionf:X->R on the manifold.
+
+$F : X -> TX$ : 是一个 x 到 tangent vector F(x) 的映射
 
 $dx$ : d-dimensonal volum element induced by the Riemannian metric 黎曼空间里面的d-dim体积元素
 
 $L^2(X)$ : Hilbert spaces of scalar
 
 $L^2(TX)$ : vector fields on manifolds
+
+- 经典微分和微分几何的巨大区别之一是没有在manifold构造的向量
+-
