@@ -11,6 +11,9 @@ sudo apt upgrade
 ```bash
 # 就是没装这个导致ssl module in Python is not available
 sudo apt-get install python3-dev libffi-dev libssl-dev
+# zipimport.ZipImportError: can't decompress data; zlib not available make: *** [altinstall] Error 1
+sudo apt-get install zlib1g-dev
+
 # 下载并安装python
 wget https://www.python.org/ftp/python/3.6.0/Python-3.6.0.tgz  
 tar xvf Python-3.6.0.tgz
@@ -34,4 +37,12 @@ sudo update-alternatives --config python
 ```bash
 # 用这个命令倒是可以
 virtualenv -p python3.5 py35
+```
+
+## 更改pip源
+```bash
+sudo vim ~/.pip/pip.conf
+
+[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 ```

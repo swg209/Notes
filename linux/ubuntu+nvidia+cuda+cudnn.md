@@ -1,3 +1,9 @@
+# 查看显卡配置
+```bash
+lspci -vnn | grep VGA -A 12
+lshw -C display
+```
+
 # 测试cuda
 ```bash
 cd ~/NVIDIA_CUDA-8.0_Samples
@@ -14,6 +20,6 @@ cd cuda
 sudo cp /include/cudnn.h /usr/local/cuda/include
 sudo cp -a /lib64/libcudnn* /usr/local/cuda/lib64
 sudo rm -rf libcudnn.so.6 libcudnn.so
-sudo ln -s libcudnn.so.6.0.12 libcudnn.so.6
+sudo ln -s libcudnn.so.6.0.21 libcudnn.so.6
 sudo ln -s libcudnn.so.6 libcudnn.so
 ```

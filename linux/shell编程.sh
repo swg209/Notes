@@ -37,3 +37,4 @@ echo "PID: $$"
 # 转义字符
 echo -e "alarm \a"
 
+# 拼接字符串
