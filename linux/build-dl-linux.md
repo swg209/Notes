@@ -59,3 +59,14 @@ index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 $ sudo apt-get install p7zip-full p7zip-rar
 ```
 若碰到无法解压的，要么压缩文件出了问题，要么文件格式不能用这个工具解压
+
+## sougou
+
+[Download](http://pinyin.sogou.com/linux/)
+
+```bash
+im-config
+选fcitx
+在setting-input method configuration里面添加sogou
+logout或重启一下
+```
