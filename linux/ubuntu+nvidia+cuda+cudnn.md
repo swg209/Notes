@@ -1,10 +1,16 @@
+# nvidia驱动+cuda安装方法
+
+详见同目录下[***Ubuntu16.04-TAITAN-X-CUDA-8.pdf***]
+
 # 查看显卡配置
+
 ```bash
 lspci -vnn | grep VGA -A 12
 lshw -C display
 ```
 
 # 测试cuda
+
 ```bash
 cd ~/NVIDIA_CUDA-8.0_Samples
 make
@@ -13,6 +19,7 @@ sudo ./deviceQuery
 ```
 
 # 安装cudnn
+
 下载tgz包
 ```bash
 tar -xf cudnn-8.0-linux-x64-v6.0.tgz
