@@ -35,6 +35,12 @@ git checkout iss53
 git branch -d hotfix
 ```
 
+### 新建repository
+
+```bash
+git init
+```
+
 # 问题集合
 
 ### git push提示没有权限
