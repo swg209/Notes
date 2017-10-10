@@ -37,9 +37,7 @@ git branch -d hotfix
 
 ### 新建repository
 
-```bash
-git init
-```
+目前用的最笨的手动创建repository，然后git clone到本地，然后往本地的文件夹添加文件，再push上去
 
 # 问题集合
 
@@ -76,4 +74,20 @@ Are you sure you want to continue connecting (yes/no)? yes
 Warning: Permanently added ‘github.com,207.97.227.239′ (RSA) to the list of known hosts.
 ERROR: Hi tekkub! You’ve successfully authenticated, but GitHub does not provide shell access
 Connection to github.com closed.
+```
+
+### 如何修改github上仓库的项目语言?
+
+问题原因:
+
+github 是根据项目里文件数目最多的文件类型,识别项目类型.
+
+解决办法:
+
+项目根目录添加 .gitattributes 文件, 内容如下 :
+
+```
+*.swift linguist-language=objective-c
+
+作用: 把项目里的 .swift 文件, 识别成 objective-c 语言
 ```

@@ -70,3 +70,11 @@ im-config
 在setting-input method configuration里面添加sogou
 logout或重启一下
 ```
+
+## uget+aria2
+
+```bash
+sudo apt install uget aria2
+```
+
+然后在edit -> setting -> plug-in设置为aria2
