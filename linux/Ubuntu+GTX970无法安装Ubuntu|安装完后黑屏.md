@@ -58,3 +58,10 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash nomodeset"
 有几种办法：
 * 再装一个win，多了个启动项就会出现grub让你选操作系统
 * 开机后按住shift，会进入grub，然后按e进入编辑模式，将"quiet splash"改为"quiet splash nomodeset"，按F10。进入系统后装好nvidia驱动。
+
+
+# 最后
+
+本次我先装了ubuntu再装win10的官方iso，于是ubuntu就无法引导启动了。搞了整整一个白天尝试各种我能想到的找到的办法都没办法调出grub，包括重装ubuntu的grub、重新配置EFI分区的引导文件、删除win10的引导项然后重新装grub、copy另一台一样的机子的EFI分区文件等等等。鉴于时间关系，我没有继续深究EFI的工作原理，以及win的引导与grub的原理，后来我直接再次重装了。
+
+我推荐分区还是用MBR好些，如果你的硬盘不超过2T的话，因为easyBCD真的很好用。装win的话还是用GHO镜像吧，又快又保险。如果不想折腾，先装win再装linux，否则grub死活调不出来。

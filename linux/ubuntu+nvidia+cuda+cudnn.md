@@ -30,3 +30,9 @@ sudo rm -rf libcudnn.so.6 libcudnn.so
 sudo ln -s libcudnn.so.6.0.21 libcudnn.so.6
 sudo ln -s libcudnn.so.6 libcudnn.so
 ```
+
+# 一些依赖
+
+https://devtalk.nvidia.com/default/topic/993862/cuda-8-0-missing-required-libraries-on-ubuntu-16-04/
+
+sudo apt-get install freeglut3-dev build-essential libx11-dev libxmu-dev libxi-dev libgl1-mesa-glx libglu1-mesa libglu1-mesa-dev libglfw3-dev libgles2-mesa-dev
