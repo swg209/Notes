@@ -7,15 +7,7 @@
 
 要确定我要离开还是来了台北，需要知道前一个单词是什么。这就需要网络具有记忆，于是就提出了RNN。
 
-# LSTM
-
-### 具体实现用到的技巧
-
-假设它的三个 GATE 的输入都是线性的，例如对 input-gate 来说，y = a1x1+a2x2+a3x3+a4b。它可以通过令 a4 = -10 来使 input-gate 有一定的阈值。
-
-# RNN的training trick
-
-### Why error surface so rough
+# Why RNN's error surface so rough
 
 这是长距离传输引起的。假设有一个RNN，它的 memory 等于上一个时刻的 memory * w。除了第一个时刻 input = 1 之外，其他所有时刻 input = 0。那么在经过1001个时刻的传输后：
 
@@ -39,10 +31,33 @@ $$ w = 0.01，1*w^{1000} = 0 $$
 
 **所以**，这确实是原因所在，训练越到后面，Gradient 的值变化越来越大，error surface 的动荡越频繁越明显。所以作者想了下面的解决办法。
 
-### How to solve
+**how to solve**
 
 由于RNN的 error surface 太陡峭，所以训练的时候有个技巧，就是当 Gradient 超过某个 threshold 的时候就不要让它超过那个 threshold 。比如说超过了15，就让它 = 15。这样，参数的变化就会相对不会起飞太严重。
 
+# RNN的training trick
+
+### Identity matrix + ReLU
+
+对于一般的RNN来说，可以用单位矩阵+ReLU来初始化RNN，会有很好的效果
+
+---
+# LSTM
+
+### 具体实现用到的技巧
+
+假设它的三个 GATE 的输入都是线性的，例如对 input-gate 来说，y = a1x1+a2x2+a3x3+a4b。它可以通过令 a4 = -10 来使 input-gate 有一定的阈值。
+
+### LSTM trick
+
+
+---
+# GRU
+
+如果发现LSTM过拟合很严重，可以试试这个。
+
+
+---
 # Gradient vanished
 
 提到上面的问题顺便提下 Gradient vanished
