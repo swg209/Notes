@@ -1,3 +1,5 @@
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+
 # GCRN代码解读
 
 * 论文及源代码：[点击这里](https://github.com/youngjoo-epfl/gconvRNN)
