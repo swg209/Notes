@@ -1,6 +1,6 @@
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
 # GCRN代码解读
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
 
 * 论文及源代码：[点击这里](https://github.com/youngjoo-epfl/gconvRNN)
 
@@ -60,7 +60,7 @@ p i e r r e _ < u n k > _ N _ y e a r s _ o l d _ w i l l _ j o i n _ t h e _ b 
 
 **2. 构造邻接矩阵**
 
-![](./img/adj1.png)
+![](./img/adj.png)
 
 得到邻接矩阵的值：
 
@@ -98,7 +98,7 @@ $$T_k(x) = 2LT_{k-1}(x)-T_{k-2}(x)$$
 
 数据预处理 -> model定义 -> train
 
-![](./img/data_shape.png)
+![](./img/dataflow.png)
 
 在第四步，会将x_reshape
 
