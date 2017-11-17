@@ -1,7 +1,5 @@
 # GCRN代码解读
 
-<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-
 * 论文及源代码：[点击这里](https://github.com/youngjoo-epfl/gconvRNN)
 
 若有错误，欢迎指正。
@@ -99,8 +97,6 @@ $$T_k(x) = 2LT_{k-1}(x)-T_{k-2}(x)$$
 数据预处理 -> model定义 -> train
 
 ![](./img/dataflow.png)
-
-在第四步，会将x_reshape
 
 输出```ouput```的shape为(batch_size, num_node, num_unit) —— (20, 50, 50)。由于设置了有50个LSTM units，所以这里需要使所有units的输出做线性变换，使其变为一个值：
 
