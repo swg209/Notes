@@ -4,7 +4,7 @@
 
 ### competition
 
-最近参加的比赛的源码及比赛过程中的学习笔记 [click](./competition)
+比赛过程中的学习笔记 [click](./competition)
 
 ### deep_learning
 
@@ -25,7 +25,3 @@
 ### python
 
 使用python过程中的笔记 [click](./python)
-
-### 待办事项
-
-记录待办事项 [click](./待办事项.md)
