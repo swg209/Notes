@@ -26,14 +26,10 @@
 
 使用python过程中的笔记 [click](https://github.com/junyanwu/md-files/tree/master/python)
 
-### 日常
-
-日常生活注意事项 [click](https://github.com/junyanwu/md-files/tree/master/%E6%97%A5%E5%B8%B8)
-
 ### 计划list
 
-长短期计划 [click](https://github.com/junyanwu/md-files/tree/master/%E8%AE%A1%E5%88%92list)
+长短期计划 [click](./计划list)
 
 ### 待办事项
 
-记录待办事项 [click](https://github.com/junyanwu/md-files/blob/master/%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9.md)
+记录待办事项 [click](./待办事项.md)
