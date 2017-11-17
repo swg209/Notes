@@ -15,4 +15,4 @@
 对于所有节点 $v_i \in G$
 
 
-$$batchsize * seqlength * int(match.floor(\frac{length}{batchsize * seqlength}))$$
+$$batchsize * seqlength * match.floor(\frac{length}{batchsize * seqlength})$$
