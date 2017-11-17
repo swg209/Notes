@@ -1,14 +1,14 @@
 ## Start
 
-本目录用于保存研究生学习生涯笔记
+本目录用于保存研究生学习生涯笔记。由于涉及比较多的公式，而github不支持MathJax或者LaTeX，所以如果想获得更好的阅读体验请安装chrome插件[GitHub with MathJax](https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima)。或者有更好的方法恳请告知。
 
 ### competition
 
 最近参加的比赛的源码及比赛过程中的学习笔记 [click](./competition)
 
-### DeepLearning
+### deep_learning
 
-学习DL过程中的学习笔记 [click](./DeepLearning)
+学习DL过程中的学习笔记 [click](./deep_learning)
 
 ### lab
 
@@ -25,10 +25,6 @@
 ### python
 
 使用python过程中的笔记 [click](./python)
-
-### 计划list
-
-长短期计划 [click](./计划list)
 
 ### 待办事项
 
