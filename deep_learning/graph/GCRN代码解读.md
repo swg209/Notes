@@ -295,3 +295,9 @@ def __call__(self, inputs, state, scope=None):
 * L的最小非零特征值称为谱间隙（spectral gap）
 * 图中连通分量的个数是拉普拉斯算子的零空间维数和0特征值的代数多重性
 * 拉普拉斯矩阵是奇异的
+
+
+### 问题
+
+1. 代码实现里面的公式跟论文是否真的不一样
+2. x2 = 2 * tf.sparse_tensor_dense_matmul(L, x1) - x0 起到一个什么作用
