@@ -1,6 +1,6 @@
 # Dynamic Routing Between Capsules 中文翻译
 
-* 仅仅是看论文过程中顺便翻译，水平有限，请勿当真
+* 仅仅是看论文过程中一些比较难理解的段落顺便翻译一下，未经修改整理，请勿当真请勿当真请勿当真
 
 ### Abstract
 
@@ -30,4 +30,24 @@ capsule的输出是一个向量，所以它能够用动态路由机制去给合�
 我们想用capsule的输出向量的长度表示概率，这个概率指的是当前输入中存在capsule代表的实体的概率。
 
 
-log priors可以同时有差别地像其他参数一样学习。它们取决于
+log priors $b_{ij}$ 可以同时有差别地像其他参数一样学习。它们取决于两个capsule的位置和类型，但与当前输入图片无关。
+
+
+### 3 Margin loss for digit existence
+
+我们用instantiation vector的长度表示capsule的实体存在的概率。所以如果某数字出现在图片上，我们希望该数字类k的顶层capsule的输出向量比较长。为了实现这个目的，我们使用了separate margin loss：
+
+### 4.1 Reconstruction as a regularization method
+
+这一部分讲他们打算用reconstruction替代regularization。
+
+我们用额外的reconstruction loss鼓励digit capsule编码输入数字的instantiation parameter。在训练过程中，我们mask除了正确的digit capsule以外的所有activity vector，然后，用这个正确的digit capsule的activity vector重构输入图像。
+如何重构呢，方法是将digit capsule的输出放入由三个FC层组成的decoder（如下图所示）
+
+![fig2](./img/capsule_figure2.png)
+
+然后最小化logistic units和pixel intensities之间的平方差之和（也就是reconstruction loss）。我们将这个loss减少0.0005，这样它就不会在margin loss里面占主要地位。
+
+### Structure
+
+![fig1](./img/capsule_figure1.png)

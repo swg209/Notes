@@ -99,6 +99,6 @@ pylab.show()
 ```
 ![网站原图](http://deeplearning.net/tutorial/_images/3wolfmoon_output.png)
 
-![no_gray](./image/wolf_no_gray.png)
+![no_gray](./img/wolf_no_gray.png)
 
-![shape改为3](./image/wolf_shape3.png)
+![shape改为3](./img/wolf_shape3.png)
