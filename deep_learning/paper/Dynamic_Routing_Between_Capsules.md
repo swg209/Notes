@@ -44,10 +44,12 @@ log priors $b_{ij}$ 可以同时有差别地像其他参数一样学习。它们
 我们用额外的reconstruction loss鼓励digit capsule编码输入数字的instantiation parameter。在训练过程中，我们mask除了正确的digit capsule以外的所有activity vector，然后，用这个正确的digit capsule的activity vector重构输入图像。
 如何重构呢，方法是将digit capsule的输出放入由三个FC层组成的decoder（如下图所示）
 
-![fig2](./img/capsule_figure2.png)
+
 
 然后最小化logistic units和pixel intensities之间的平方差之和（也就是reconstruction loss）。我们将这个loss减少0.0005，这样它就不会在margin loss里面占主要地位。
 
 ### Structure
 
 ![fig1](./img/capsule_figure1.png)
+
+![fig2](./img/capsule_figure2.png)

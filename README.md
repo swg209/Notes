@@ -18,10 +18,6 @@
 
 使用linux过程中遇到的一些问题的解决办法 [click](./linux)
 
-### paper-reading
-
-阅读paper过程中的笔记 [click](./paper-reading)
-
 ### python
 
 使用python过程中的笔记 [click](./python)
