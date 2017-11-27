@@ -1,18 +1,18 @@
 [toc]
 
-# Intro
+## Intro
 
 本文记录了阅读[《Dynamic Routing Between Capsules》](https://arxiv.org/pdf/1710.09829)的理解与收获，若有错误欢迎email(wjy.f@qq.com)指出。转载请注明出处。
 
 为了对文章有个大概的认识，先来介绍模型的结构，再来谈其他玄学问题。
 
-# Main
+## Main
 
-## CapsNet
+### CapsNet
 
 <br>
 
-#### 结构
+##### 结构
 
 下图是论文中所采用的神经网络结构：
 
@@ -24,7 +24,7 @@
 
 <br>
 
-#### 公式
+##### 公式
 
 $$\hat{u}_{j|i} = W_{ij}u_i \tag{1}$$
 
@@ -51,7 +51,7 @@ $$squash(s_j):v_j = \frac{\|s_j\|^2}{1+\|s_j\|^2}\frac{s_j}{\|s_j\|} \tag{4}$$
 
 <br>
 
-#### Margin loss
+##### Margin loss
 
 ![](./img/cap_lossfunc.png)
 
@@ -71,7 +71,7 @@ $$squash(s_j):v_j = \frac{\|s_j\|^2}{1+\|s_j\|^2}\frac{s_j}{\|s_j\|} \tag{4}$$
 
 <br>
 
-#### 算法流程
+##### 算法流程
 
 下面看公式和Procedure1应该能明白它是怎么一个处理过程了。
 
@@ -81,7 +81,7 @@ $$squash(s_j):v_j = \frac{\|s_j\|^2}{1+\|s_j\|^2}\frac{s_j}{\|s_j\|} \tag{4}$$
 
 <br>
 
-## 玄学
+### 玄学
 
 论文仅仅介绍了capsule初步简单的实现，让大家知道capsule是有效的。而其核心思想
 
@@ -99,11 +99,30 @@ CapsNet与tradictional neuron的对比（图片来自[naturomics](https://github
 ```
 
 <br>
-<br>
 
-## 存疑
+### 存疑
 
 * 32个PrimaryCaps用的是同一个conv吗？
 * CapsNet与普通神经网络的区别
 * 动态路由算法
 * 实体在模型中是否会有所表现
+
+<br>
+
+### 代码阅读
+
+[link](https://github.com/naturomics/CapsNet-Tensorflow)
+
+- CONV1_LAYER<br>
+>conv1 = tf.contrib.layers.conv2d(self.X,num_outputs=256, kernel_size=9, stride=1, padding='VALID')
+
+- PRIMARYCAPS_LAYER<br>
+
+>primaryCaps = CapsLayer(num_outputs=32, vec_len=8, with_routing=False, layer_type='CONV')
+caps1 = primaryCaps(conv1, kernel_size=9, stride=2)
+
+在CapsLayer的实现的CONV中，使得输出为“self.num_outputs * self.vec_len”，问题是，这个设定是否意味着有num_outputs*vec_len个filter？
+
+是的。
+
+-
