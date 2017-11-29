@@ -130,3 +130,47 @@ with tf.variable_scope("foo", reuse=True):
 ```
 
 而对tf.Variable来说，是直接定义变量
+
+<br>
+
+**tf.tile**
+
+*例子*
+
+```python
+with tf.Graph().as_default():  
+    a = tf.constant([[1,2],[3,4]],name='a')     
+    b = tf.tile(a,[2,3])  
+    sess = tf.Session()  
+    print(sess.run(b))
+
+output：
+    [[1 2 1 2 1 2]  
+     [3 4 3 4 3 4]  
+     [1 2 1 2 1 2]  
+     [3 4 3 4 3 4]]
+
+
+tiling `[a b c d]` by `[2]`
+produces `[a b c d a b c d]`
+```
+
+<br>
+
+**tf.reduce_sum**
+
+Computes the sum of elements across dimensions of a tensor
+
+*例子*
+
+```python
+# 'x' is [[1, 1, 1]
+#         [1, 1, 1]]
+tf.reduce_sum(x) ==> 6
+tf.reduce_sum(x, 0) ==> [2, 2, 2]
+tf.reduce_sum(x, 1) ==> [3, 3]
+tf.reduce_sum(x, 1, keep_dims=True) ==> [[3], [3]]
+tf.reduce_sum(x, [0, 1]) ==> 6
+
+s_J = tf.reduce_sum(s_J, axis=1, keep_dims=True)
+```

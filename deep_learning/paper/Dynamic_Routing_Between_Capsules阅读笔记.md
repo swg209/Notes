@@ -114,6 +114,7 @@ CapsNet与tradictional neuron的对比（图片来自[naturomics](https://github
 [link](https://github.com/naturomics/CapsNet-Tensorflow)
 
 - CONV1_LAYER<br>
+
 >conv1 = tf.contrib.layers.conv2d(self.X,num_outputs=256, kernel_size=9, stride=1, padding='VALID')
 
 - PRIMARYCAPS_LAYER<br>
@@ -125,4 +126,4 @@ caps1 = primaryCaps(conv1, kernel_size=9, stride=2)
 
 是的。
 
--
+- DIGITCAPS_LAYER<br>
