@@ -174,3 +174,9 @@ tf.reduce_sum(x, [0, 1]) ==> 6
 
 s_J = tf.reduce_sum(s_J, axis=1, keep_dims=True)
 ```
+
+<br>
+
+**tf.argmax()**
+
+*例子*

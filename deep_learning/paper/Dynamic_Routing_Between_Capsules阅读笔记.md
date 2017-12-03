@@ -113,9 +113,13 @@ CapsNet与tradictional neuron的对比（图片来自[naturomics](https://github
 
 [link](https://github.com/naturomics/CapsNet-Tensorflow)
 
+<br>
+
 - CONV1_LAYER<br>
 
 >conv1 = tf.contrib.layers.conv2d(self.X,num_outputs=256, kernel_size=9, stride=1, padding='VALID')
+
+<br>
 
 - PRIMARYCAPS_LAYER<br>
 
@@ -126,4 +130,78 @@ caps1 = primaryCaps(conv1, kernel_size=9, stride=2)
 
 是的。
 
+<br>
+
 - DIGITCAPS_LAYER<br>
+
+
+
+<br>
+
+- def squash(vector)
+
+计算过程：
+
+```
+# 将vector^2后，再将倒数第二维全部加起来
+vec_squared_norm = tf.reduce_sum(tf.square(vector), -2, keep_dims=True)
+```
+$$scalar = \frac{vecsqnorm}{(1+vecsqnorm)\sqrt{vecsqnorm+epsilon}}$$
+
+跟论文的公式一样
+
+<br>
+
+- def routing(input, b_IJ)
+
+| Variable | shape |
+| -------- | ----- |
+| input | (128, 1152, 1, 8, 1) to (128, 1152, 10, 8, 1) |
+| W | (1, 1152, 10, 8, 16) |
+| b_IJ | (128, 1152, 10, 1, 1) |
+
+函数的思路如下所示
+
+```python
+# 难道这个令人窒息的操作是传说中的权重共享？
+W (1, 1152, 10, 8, 16)
+---tile--->
+W (128, 1152, 10, 8, 16)
+
+input (128, 1152, 1, 8, 1)
+---tile--->
+input (128, 1152, 10, 8, 1)
+
+u_hat = matmul(W, input)    (128, 1152, 10, 16, 1)
+u_hat_stopped               (128, 1152, 10, 16, 1)
+
+for r_iter in range(迭代次数):
+  # b_IJ (128, 1152, 10, 1, 1)
+  # 对b_IJ的第三维做softmax
+  c_IJ = softmax(b_IJ, dim=2)   (128, 1152, 10, 1, 1)
+
+  if 最后一次迭代：
+    s_J = c_IJ * u_hat          (128, 1152, 10, 16, 1)
+    reducesum(s_J, axis=1)      (128, 1, 10, 16, 1)
+    v_J = squash(s_J)
+
+  if 不是最后一次迭代（这部分和Procedure1的第7步一样）：
+    s_J = c_IJ * u_hat_stopped  (128, 1152, 10, 16, 1)
+    reduce_sum(s_J, axis=1)     (128, 1, 10, 16, 1)
+    v_J = squash(s_J)
+    v_J_tiled = tf.tile(v_J, [1, 1152, 1, 1, 1])     (128, 1152, 10, 16, 1)
+    u_produce_v = u_hat_stopped_T * v_J_tiled        (128, 1152, 10, 1, 1)
+    b_IJ += u_produce_v
+
+
+```
+
+<br>
+
+- Masking
+
+```python
+v_length = (reduce_sum(caps2^2, axis=2) + epsilon)^1/2    (128, 10, 1, 1)
+softmax_v = softmax(v_length_I)                           (128, 10, 1, 1)
+argmax_idx =
+```
