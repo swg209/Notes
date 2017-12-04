@@ -123,5 +123,5 @@ do
   date=($(date +%H:%M:%S))
   #echo "evening-end, $date"
 
-  sleep 900
+  sleep 60
 done

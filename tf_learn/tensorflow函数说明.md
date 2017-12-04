@@ -133,7 +133,7 @@ with tf.variable_scope("foo", reuse=True):
 
 <br>
 
-**tf.tile**
+**tf.tile()**
 
 *例子*
 
@@ -157,7 +157,7 @@ produces `[a b c d a b c d]`
 
 <br>
 
-**tf.reduce_sum**
+**tf.reduce_sum()**
 
 Computes the sum of elements across dimensions of a tensor
 
@@ -180,3 +180,59 @@ s_J = tf.reduce_sum(s_J, axis=1, keep_dims=True)
 **tf.argmax()**
 
 *例子*
+
+```python
+import numpy as np
+import tensorflow as tf
+
+sess = tf.session()
+m = sess.run(tf.truncated_normal((5,10), stddev = 0.1) )
+print type(m)
+print m
+
+----------------------------------------------------------------
+<type 'numpy.ndarray'>
+[[ 0.09957541 -0.0965599   0.06064715 -0.03011306  0.05533558  0.17263047
+  -0.02660419  0.08313394 -0.07225946  0.04916157]
+ [ 0.11304571  0.02099175  0.03591062  0.01287777 -0.11302195  0.04822164
+  -0.06853487  0.0800944  -0.1155676  -0.01168544]
+ [ 0.15760773  0.05613248  0.04839646 -0.0218203   0.02233066  0.00929849
+  -0.0942843  -0.05943     0.08726917 -0.059653  ]
+ [ 0.02553608  0.07298559 -0.06958302  0.02948747  0.00232073  0.11875584
+  -0.08325859 -0.06616175  0.15124641  0.09522969]
+ [-0.04616683  0.01816062 -0.10866459 -0.12478453  0.01195056  0.0580056
+  -0.08500613  0.00635608 -0.00108647  0.12054099]]
+
+
+#使用tensorflow中的tf.argmax()
+col_max = sess.run(tf.argmax(m, 0) )  #当axis=0时返回每一列的最大值的位置索引
+print col_max
+
+row_max = sess.run(tf.argmax(m, 1) )  #当axis=1时返回每一行中的最大值的位置索引
+print row_max
+
+array([2, 3, 0, 3, 0, 0, 0, 0, 3, 4])
+array([5, 0, 0, 8, 9])
+```
+
+tf.argmax()与numpy.argmax()方法的用法是一致的
+
+- axis = 0的时候返回每一列最大值的位置索引
+- axis = 1的时候返回每一行最大值的位置索引
+- axis = 2、3、4...，即为多维张量时，同理推断
+
+<br>
+
+**tf.squeeze()**
+
+删除张量中所有大小为1的维度
+
+```python
+# ‘t’ is a tensor of shape [1, 2, 1, 3, 1, 1]
+shape(squeeze(t)) => [2, 3]
+
+# 't' is a tensor of shape [1, 2, 1, 3, 1, 1]
+# 如果不想删除所有大小是1的维度，可以通过squeeze_dims指定
+# squeeze_dims: An optional list of ints. Defaults to []. If specified, only squeezes the dimensions listed. The dimension index starts at 0. It is an error to squeeze a dimension that is not 1.
+shape(squeeze(t, [2, 4])) => [1, 2, 3, 1]
+```

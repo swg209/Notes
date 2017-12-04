@@ -200,8 +200,30 @@ for r_iter in range(迭代次数):
 
 - Masking
 
-```python
-v_length = (reduce_sum(caps2^2, axis=2) + epsilon)^1/2    (128, 10, 1, 1)
-softmax_v = softmax(v_length_I)                           (128, 10, 1, 1)
-argmax_idx =
-```
+设DigitCaps的输出结果为x，batchsize=128，则Masking所做的是：
+
+将这部分是要用ground truth的onehot vector与DigitCaps的输出做element-wise multiply(mask)，得到masked_v(128, 10, 16)，然后求DigitCaps的输出向量的长度，得到v_length(128, 10, 1, 1)
+
+<br>
+
+- Decoder
+
+这里将Masking得到的masked_v拉成一维向量(128, 160)，放入fc1层(nun_outputs=512)，得到的结果再放入fc2(num_outputs=1024)，得到的结果再放入fc3(nun_outputs=784, activation_fn=sigmoid)，最后得到decoded，这个decoded就可以reshape一下得到重构的图像。
+
+<br>
+
+**def loss**
+
+- margin_loss
+
+![](./img/cap_lossfunc.png)
+
+- reconstruction loss
+
+将x(128, 28, 28, 1)reshape成orgin(128, 784)
+
+$$$$
+
+$$$$
+
+$$$$

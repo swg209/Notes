@@ -17,6 +17,9 @@
       
       
       
+      
+      
+      
 
       <style> 
       /**
@@ -224,27 +227,27 @@ code.language-yaml {
 * <a href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</a></li>
 <li><a href="#%E7%8E%84%E5%AD%A6">玄学</a></li>
 <li><a href="#%E5%AD%98%E7%96%91">存疑</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</a></li>
 </ul>
 </li>
 </ul>
-<h1 class="mume-header" id="intro">Intro</h1>
+<h2 class="mume-header" id="intro">Intro</h2>
 
 <p>本文记录了阅读<a href="https://arxiv.org/pdf/1710.09829">《Dynamic Routing Between Capsules》</a>的理解与收获，若有错误欢迎email(<a href="mailto:wjy.f@qq.com">wjy.f@qq.com</a>)指出。转载请注明出处。</p>
 <p>为了对文章有个大概的认识，先来介绍模型的结构，再来谈其他玄学问题。</p>
-<h1 class="mume-header" id="main">Main</h1>
+<h2 class="mume-header" id="main">Main</h2>
 
-<h2 class="mume-header" id="capsnet">CapsNet</h2>
+<h3 class="mume-header" id="capsnet">CapsNet</h3>
 
 <br>
-<h4 class="mume-header" id="&#x7ED3;&#x6784;">结构</h4>
+<h5 class="mume-header" id="%E7%BB%93%E6%9E%84">结构</h5>
 
 <p>下图是论文中所采用的神经网络结构：</p>
 <p><img src="./img/capsule_figure1.png" alt=""></p>
 <p>可以看到，image首先由conv1(num_kernel=256, kernel_size=9, stride=1) + ReLU提取特征，得到256个20×20的feature map。然后再用conv2(num_kernel=8, kernel_size=9, stride=2)，得到一个PrimaryCaps(6×6*8)。<strong>这里有个疑问，32个PrimaryCaps用的是同一个conv吗？</strong></p>
 <p>于是，每个PrimaryCaps里面有6×6个8D capsule，第二层共有32×6×6个8D capsule。</p>
 <br>
-<br>
-<h4 class="mume-header" id="&#x516C;&#x5F0F;">公式</h4>
+<h5 class="mume-header" id="%E5%85%AC%E5%BC%8F">公式</h5>
 
 <p><div class="mathjax-exps">$$&#x5C;hat{u}_{j|i} = W_{ij}u_i &#x5C;tag{1}$$</div></p>
 <ul>
@@ -268,8 +271,7 @@ code.language-yaml {
 <p><strong>一张图表示他们之间的关系：</strong></p>
 <p><img src="./img/ui2vj.png" alt=""></p>
 <br>
-<br>
-<h4 class="mume-header" id="margin-loss">Margin loss</h4>
+<h5 class="mume-header" id="margin-loss">Margin loss</h5>
 
 <p><img src="./img/cap_lossfunc.png" alt=""></p>
 <ul>
@@ -331,15 +333,17 @@ code.language-yaml {
 </li>
 </ul>
 <br>
-<h4 class="mume-header" id="&#x7B97;&#x6CD5;&#x6D41;&#x7A0B;">算法流程</h4>
+<h5 class="mume-header" id="%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</h5>
 
 <p>下面看公式和Procedure1应该能明白它是怎么一个处理过程了。</p>
 <p><img src="./img/procedure1.png" alt=""></p>
 <p><strong>其中</strong>，若 i 指某一个capsule ，那么 j 就是这个capsule的parent capsule。对下面的公式来说也是一样。</p>
 <br>
-<h2 class="mume-header" id="&#x7384;&#x5B66;">玄学</h2>
+<h3 class="mume-header" id="%E7%8E%84%E5%AD%A6">玄学</h3>
 
 <p>论文仅仅介绍了capsule初步简单的实现，让大家知道capsule是有效的。而其核心思想</p>
+<p>CapsNet与tradictional neuron的对比（图片来自<a href="https://github.com/naturomics/CapsNet-Tensorflow">naturomics</a>）：</p>
+<p><img src="https://github.com/naturomics/CapsNet-Tensorflow/raw/master/imgs/capsuleVSneuron.png" alt=""></p>
 <p>论文有两个比较突出的创新点：</p>
 <ul>
 <li>采用 routing-by-agreement mechainsm 决定两层capsule之间的连接以及参数<span class="mathjax-exps">$c_{ij}$</span>的更新方式</li>
@@ -348,12 +352,121 @@ code.language-yaml {
 <pre class="language-">&#x8FD9;&#x91CC;&#x5199;&#x80CC;&#x666F;&#xFF08;&#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x8FD9;&#x4E48;&#x6784;&#x9020;&#x6A21;&#x578B;&#xFF0C;&#x80CC;&#x540E;&#x7684;&#x795E;&#x7ECF;&#x79D1;&#x5B66;&#x77E5;&#x8BC6;)
 </pre>
 <br>
-<br>
-<h2 class="mume-header" id="&#x5B58;&#x7591;">存疑</h2>
+<h3 class="mume-header" id="%E5%AD%98%E7%96%91">存疑</h3>
 
 <ul>
 <li>32个PrimaryCaps用的是同一个conv吗？</li>
+<li>CapsNet与普通神经网络的区别</li>
+<li>动态路由算法</li>
+<li>实体在模型中是否会有所表现</li>
 </ul>
+<br>
+<h3 class="mume-header" id="%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</h3>
+
+<p><a href="https://github.com/naturomics/CapsNet-Tensorflow">link</a></p>
+<br>
+<ul>
+<li>CONV1_LAYER<br></li>
+</ul>
+<blockquote>
+<p>conv1 = tf.contrib.layers.conv2d(self.X,num_outputs=256, kernel_size=9, stride=1, padding='VALID')</p>
+</blockquote>
+<br>
+<ul>
+<li>PRIMARYCAPS_LAYER<br></li>
+</ul>
+<blockquote>
+<p>primaryCaps = CapsLayer(num_outputs=32, vec_len=8, with_routing=False, layer_type='CONV')<br>
+caps1 = primaryCaps(conv1, kernel_size=9, stride=2)</p>
+</blockquote>
+<p>在CapsLayer的实现的CONV中，使得输出为“self.num_outputs * self.vec_len”，问题是，这个设定是否意味着有num_outputs*vec_len个filter？</p>
+<p>是的。</p>
+<br>
+<ul>
+<li>DIGITCAPS_LAYER<br></li>
+</ul>
+<br>
+<ul>
+<li>def squash(vector)</li>
+</ul>
+<p>计算过程：</p>
+<pre class="language-"># &#x5C06;vector^2&#x540E;&#xFF0C;&#x518D;&#x5C06;&#x5012;&#x6570;&#x7B2C;&#x4E8C;&#x7EF4;&#x5168;&#x90E8;&#x52A0;&#x8D77;&#x6765;
+vec_squared_norm = tf.reduce_sum(tf.square(vector), -2, keep_dims=True)
+</pre>
+<p><div class="mathjax-exps">$$scalar = &#x5C;frac{vecsqnorm}{(1+vecsqnorm)&#x5C;sqrt{vecsqnorm+epsilon}}$$</div></p>
+<p>跟论文的公式一样</p>
+<br>
+<ul>
+<li>def routing(input, b_IJ)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>shape</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>input</td>
+<td>(128, 1152, 1, 8, 1) to (128, 1152, 10, 8, 1)</td>
+</tr>
+<tr>
+<td>W</td>
+<td>(1, 1152, 10, 8, 16)</td>
+</tr>
+<tr>
+<td>b_IJ</td>
+<td>(128, 1152, 10, 1, 1)</td>
+</tr>
+</tbody>
+</table>
+<p>函数的思路如下所示</p>
+<pre class="language-python"><span class="token comment" spellcheck="true"># 难道这个令人窒息的操作是传说中的权重共享？</span>
+W <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span>
+<span class="token operator">-</span><span class="token operator">-</span><span class="token operator">-</span>tile<span class="token operator">-</span><span class="token operator">-</span><span class="token operator">-</span><span class="token operator">></span>
+W <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span>
+
+input <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+<span class="token operator">-</span><span class="token operator">-</span><span class="token operator">-</span>tile<span class="token operator">-</span><span class="token operator">-</span><span class="token operator">-</span><span class="token operator">></span>
+input <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+
+u_hat <span class="token operator">=</span> matmul<span class="token punctuation">(</span>W<span class="token punctuation">,</span> input<span class="token punctuation">)</span>    <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+u_hat_stopped               <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+
+<span class="token keyword">for</span> r_iter <span class="token keyword">in</span> range<span class="token punctuation">(</span>迭代次数<span class="token punctuation">)</span><span class="token punctuation">:</span>
+  <span class="token comment" spellcheck="true"># b_IJ (128, 1152, 10, 1, 1)</span>
+  <span class="token comment" spellcheck="true"># 对b_IJ的第三维做softmax</span>
+  c_IJ <span class="token operator">=</span> softmax<span class="token punctuation">(</span>b_IJ<span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span>   <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+
+  <span class="token keyword">if</span> 最后一次迭代：
+    s_J <span class="token operator">=</span> c_IJ <span class="token operator">*</span> u_hat          <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    reducesum<span class="token punctuation">(</span>s_J<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>      <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    v_J <span class="token operator">=</span> squash<span class="token punctuation">(</span>s_J<span class="token punctuation">)</span>
+
+  <span class="token keyword">if</span> 不是最后一次迭代（这部分和Procedure1的第<span class="token number">7</span>步一样）：
+    s_J <span class="token operator">=</span> c_IJ <span class="token operator">*</span> u_hat_stopped  <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    reduce_sum<span class="token punctuation">(</span>s_J<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>     <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    v_J <span class="token operator">=</span> squash<span class="token punctuation">(</span>s_J<span class="token punctuation">)</span>
+    v_J_tiled <span class="token operator">=</span> tf<span class="token punctuation">.</span>tile<span class="token punctuation">(</span>v_J<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>     <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    u_produce_v <span class="token operator">=</span> u_hat_stopped_T <span class="token operator">*</span> v_J_tiled        <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+    b_IJ <span class="token operator">+=</span> u_produce_v
+
+
+</pre>
+<br>
+<ul>
+<li>Masking</li>
+</ul>
+<p>设DigitCaps的输出结果为x，batchsize=128，则Masking所做的是：</p>
+<p>将这部分是要用ground truth的onehot vector与DigitCaps的输出做element-wise multiply做masking，得到masked_v，<br>
+$$$$</p>
+<p>$$$$</p>
+<p>$$$$</p>
+<pre class="language-python">v_length <span class="token operator">=</span> <span class="token punctuation">(</span>reduce_sum<span class="token punctuation">(</span>caps2<span class="token operator">^</span><span class="token number">2</span><span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">+</span> epsilon<span class="token punctuation">)</span><span class="token operator">^</span><span class="token number">1</span><span class="token operator">/</span><span class="token number">2</span>    <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+softmax_v <span class="token operator">=</span> softmax<span class="token punctuation">(</span>v_length_I<span class="token punctuation">)</span>                           <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
+argmax_idx <span class="token operator">=</span>
+</pre>
 
       </div>
       <div class="md-sidebar-toc"><ul>
@@ -367,12 +480,15 @@ code.language-yaml {
 * <a href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</a></li>
 <li><a href="#%E7%8E%84%E5%AD%A6">玄学</a></li>
 <li><a href="#%E5%AD%98%E7%96%91">存疑</a></li>
+<li><a href="#%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</a></li>
 </ul>
 </li>
 </ul>
 </div>
       <a id="sidebar-toc-btn">≡</a>
     </body>
+    
+    
     
     
     
