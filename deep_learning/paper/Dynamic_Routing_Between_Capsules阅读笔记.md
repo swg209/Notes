@@ -2,9 +2,15 @@
 
 ## Intro
 
-本文记录了阅读[《Dynamic Routing Between Capsules》](https://arxiv.org/pdf/1710.09829)的理解与收获，若有错误欢迎email(wjy.f@qq.com)指出。转载请注明出处。
+- 联系方式：wjy.f@qq.com
 
-为了对文章有个大概的认识，先来介绍模型的结构，再来谈其他玄学问题。
+由于涉及比较多的公式，而github不支持MathJax或者LaTeX，所以如果想获得更好的阅读体验请安装chrome插件[GitHub with MathJax](https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima)，或者有更好的方法恳请告知。
+
+本文记录了阅读[《*Dynamic Routing Between Capsules*》](https://arxiv.org/pdf/1710.09829)的理解与收获，若有错误欢迎指出。转载请注明出处。
+
+为了对文章有个大概的认识，先来介绍模型的结构，再结合代码理解实现。
+
+
 
 ## Main
 
@@ -221,6 +227,12 @@ for r_iter in range(迭代次数):
 - reconstruction loss
 
 将x(128, 28, 28, 1)reshape成orgin(128, 784)
+squared = tf.square(self.decoded - orgin)
+self.reconstruction_err = tf.reduce_mean(squared)
+
+- 总的loss
+
+total_loss = margin_loss + reconstruction_err * cfg.regularization_scale
 
 $$$$
 

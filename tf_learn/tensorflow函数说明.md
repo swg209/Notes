@@ -227,6 +227,8 @@ tf.argmax()与numpy.argmax()方法的用法是一致的
 
 删除张量中所有大小为1的维度
 
+*例子*
+
 ```python
 # ‘t’ is a tensor of shape [1, 2, 1, 3, 1, 1]
 shape(squeeze(t)) => [2, 3]
@@ -236,3 +238,60 @@ shape(squeeze(t)) => [2, 3]
 # squeeze_dims: An optional list of ints. Defaults to []. If specified, only squeezes the dimensions listed. The dimension index starts at 0. It is an error to squeeze a dimension that is not 1.
 shape(squeeze(t, [2, 4])) => [1, 2, 3, 1]
 ```
+
+<br>
+
+**tf.reduce_mean()**
+
+Computes the mean of elements across dimensions of a tensor.
+
+*例子*
+
+```python
+x = tf.constant([[1., 1.], [2., 2.]])
+tf.reduce_mean(x)  # 1.5
+tf.reduce_mean(x, 0)  # [1.5, 1.5]
+tf.reduce_mean(x, 1)  # [1.,  2.]
+```
+
+<br>
+
+****
+
+*例子*
+
+<br>
+
+****
+
+*例子*
+
+<br>
+
+****
+
+*例子*
+
+<br>
+
+****
+
+*例子*
+
+<br>
+
+****
+
+*例子*
+
+<br>
+
+****
+
+*例子*
+
+<br>
+
+****
+
+*例子*
