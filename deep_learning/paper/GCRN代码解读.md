@@ -2,7 +2,9 @@
 
 * 论文及源代码：[点击这里](https://github.com/youngjoo-epfl/gconvRNN)
 
-若有错误，欢迎指正。
+由于涉及比较多的公式，而github不支持MathJax或者LaTeX，所以如果想获得更好的阅读体验请安装chrome插件[GitHub with MathJax](https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima)，或者有更好的方法恳请告知。
+
+若发现存在错误，欢迎指正。
 
 GCN，是基于Spectral Graph Theory所研究出来的一种方法，它主要的好处是利用了SGT里面一些已有的结论和方法，来得到图的性质。GCRN是一个将GCN和RNN结合起来使用的模型，能处理具有空间和时序的数据。
 

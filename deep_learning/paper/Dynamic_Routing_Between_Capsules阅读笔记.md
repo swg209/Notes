@@ -18,19 +18,46 @@
 
 <br>
 
-##### 结构
+#### 结构概述
 
-下图是论文中所采用的神经网络结构：
+论文仅仅是提出了一个可行的方案，目的是为了证明`Capsule`这个思想的可行性，目前还较为粗略，有很多改进空间。下图是论文中所采用的神经网络结构：
 
 ![](./img/capsule_figure1.png)
 
-可以看到，image首先由conv1(num_kernel=256, kernel_size=9, stride=1) + ReLU提取特征，得到256个20×20的feature map。然后再用conv2(num_kernel=8, kernel_size=9, stride=2)，得到一个PrimaryCaps(6×6*8)。**这里有个疑问，32个PrimaryCaps用的是同一个conv吗？**
+看完这幅图应该大概能理解CapsNet的结构。它先是对图像用了两次卷积得到PrimaryCaps，然后用*Routing-By-Agreement Mechanism*得到DigitCaps。**TODO(DigitCaps后面那部分的说明)**。`Capsule`指的就是PrimaryCaps中长度为8的向量，共有`32*6*6`个Capsule。之所以称之为Capsule是因为在计算最终的输出——DigitCaps的时候，是将一个长度为8的向量当做一个整体来计算的。详细的计算过程后面会讲。
 
-于是，每个PrimaryCaps里面有6×6个8D capsule，第二层共有32×6×6个8D capsule。
+在得到DigitCaps
+
+![](./img/capsule_decoder.png)
+
+下面来详细讲讲CapsNet。
 
 <br>
 
-##### 公式
+#### image $\to$ ReLU Conv1
+
+1. image(28 * 28)
+<br>
+2. img $\to$ `Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU` $\to$ Conv1(256 * 20 * 20)
+<br>
+3. Conv1 $\to$ `Conv(num_outputs=256, kernel_size=9, stride=2, padding="VALID") + ReLU` $\to$ PrimaryCaps(256 * 6 * 6)
+  这里可能会有人奇怪图片为什么会画成(32 * 8 * 6 * 6)的形式，这是因为后面的路由算法是将一个长度为8的向量当做一个整体来计算的。
+
+<br>
+
+#### PrimaryCaps $\to$ DigitCaps
+
+- 这部分讲解从PrimaryCaps $\to$ DigitCaps的计算过程，其中主要应用了*Routing-By-Agreement Mechanism*
+
+**一张图表示他们之间的关系：**
+
+<br>
+
+![](./img/capsule_routing.png)
+
+<br>
+
+**公式**
 
 $$\hat{u}_{j|i} = W_{ij}u_i \tag{1}$$
 
@@ -50,10 +77,6 @@ $$squash(s_j):v_j = \frac{\|s_j\|^2}{1+\|s_j\|^2}\frac{s_j}{\|s_j\|} \tag{4}$$
 
 - $squashing()$： 非线性函数，保留了向量的方向，使长的向量越长，短的向量越短，并且长度都压缩在1之内
 - $v_j$： $capsule_j$ 的output。在文章中应该就是指最后的输出DigitCaps，共有10个（因为有10个数字，即10类）Capsule。每个capsule有16维，每一维都代表着数字的某些属性（粗细、倾斜程度等等）。**向量的长度代表了当前输入是类k的概率**。
-
-**一张图表示他们之间的关系：**
-
-![](./img/ui2vj.png)
 
 <br>
 
@@ -118,6 +141,12 @@ CapsNet与tradictional neuron的对比（图片来自[naturomics](https://github
 ### 代码阅读
 
 [link](https://github.com/naturomics/CapsNet-Tensorflow)
+
+代码中的实现流程如下
+
+1. image(28*28)
+2. img $\to$ `Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU` $\to$ Conv1(256 * 20 * 20)
+3. Conv1 $\to$ `Conv(num_outputs=256, kernel_size=9, stride=2, padding="VALID") + ReLU` $\to$
 
 <br>
 
@@ -234,8 +263,9 @@ self.reconstruction_err = tf.reduce_mean(squared)
 
 total_loss = margin_loss + reconstruction_err * cfg.regularization_scale
 
-$$$$
+<br>
 
-$$$$
+**main**
 
-$$$$
+num_batch = 468
+num_test_batch = 78

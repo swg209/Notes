@@ -220,11 +220,20 @@ code.language-yaml {
 <li><a href="#intro">Intro</a></li>
 <li><a href="#main">Main</a>
 <ul>
-<li><a href="#capsnet">CapsNet</a><br>
-* <a href="#%E7%BB%93%E6%9E%84">结构</a><br>
-* <a href="#%E5%85%AC%E5%BC%8F">公式</a><br>
-* <a href="#margin-loss">Margin loss</a><br>
-* <a href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</a></li>
+<li><a href="#capsnet">CapsNet</a>
+<ul>
+<li><a href="#%E7%BB%93%E6%9E%84%E6%A6%82%E8%BF%B0">结构概述</a></li>
+<li><a href="#image-to-relu-conv1">image <span class="mathjax-exps"><p>[MUMETOC]</p>
+#x5C;to$</span> ReLU Conv1</a></li>
+<li><a href="#primarycaps-to-digitcaps">PrimaryCaps <span class="mathjax-exps"><p>[MUMETOC]</p>
+#x5C;to$</span> DigitCaps</a>
+<ul>
+<li><a href="#margin-loss">Margin loss</a></li>
+<li><a href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="#%E7%8E%84%E5%AD%A6">玄学</a></li>
 <li><a href="#%E5%AD%98%E7%96%91">存疑</a></li>
 <li><a href="#%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</a></li>
@@ -233,22 +242,44 @@ code.language-yaml {
 </ul>
 <h2 class="mume-header" id="intro">Intro</h2>
 
-<p>本文记录了阅读<a href="https://arxiv.org/pdf/1710.09829">《Dynamic Routing Between Capsules》</a>的理解与收获，若有错误欢迎email(<a href="mailto:wjy.f@qq.com">wjy.f@qq.com</a>)指出。转载请注明出处。</p>
-<p>为了对文章有个大概的认识，先来介绍模型的结构，再来谈其他玄学问题。</p>
+<ul>
+<li>联系方式：wjy.f@qq.com</li>
+</ul>
+<p>由于涉及比较多的公式，而github不支持MathJax或者LaTeX，所以如果想获得更好的阅读体验请安装chrome插件<a href="https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima">GitHub with MathJax</a>，或者有更好的方法恳请告知。</p>
+<p>本文记录了阅读<a href="https://arxiv.org/pdf/1710.09829">《<em>Dynamic Routing Between Capsules</em>》</a>的理解与收获，若有错误欢迎指出。转载请注明出处。</p>
+<p>为了对文章有个大概的认识，先来介绍模型的结构，再结合代码理解实现。</p>
 <h2 class="mume-header" id="main">Main</h2>
 
 <h3 class="mume-header" id="capsnet">CapsNet</h3>
 
 <br>
-<h5 class="mume-header" id="%E7%BB%93%E6%9E%84">结构</h5>
+<h4 class="mume-header" id="%E7%BB%93%E6%9E%84%E6%A6%82%E8%BF%B0">结构概述</h4>
 
-<p>下图是论文中所采用的神经网络结构：</p>
+<p>论文仅仅是提出了一个可行的方案，目的是为了证明<code>Capsule</code>这个思想的可行性，目前还较为粗略，有很多改进空间。下图是论文中所采用的神经网络结构：</p>
 <p><img src="./img/capsule_figure1.png" alt=""></p>
-<p>可以看到，image首先由conv1(num_kernel=256, kernel_size=9, stride=1) + ReLU提取特征，得到256个20×20的feature map。然后再用conv2(num_kernel=8, kernel_size=9, stride=2)，得到一个PrimaryCaps(6×6*8)。<strong>这里有个疑问，32个PrimaryCaps用的是同一个conv吗？</strong></p>
-<p>于是，每个PrimaryCaps里面有6×6个8D capsule，第二层共有32×6×6个8D capsule。</p>
+<p>看完这幅图应该大概能理解CapsNet的结构。它先是对图像用了两次卷积得到PrimaryCaps，然后用<em>Routing-By-Agreement Mechanism</em>得到DigitCaps。<strong>TODO(DigitCaps后面那部分的说明)</strong>。<code>Capsule</code>指的就是PrimaryCaps中长度为8的向量，共有<code>32*6*6</code>个Capsule。之所以称之为Capsule是因为在计算最终的输出——DigitCaps的时候，是将一个长度为8的向量当做一个整体来计算的。详细的计算过程后面会讲。</p>
+<p>下面来详细讲讲CapsNet。</p>
 <br>
-<h5 class="mume-header" id="%E5%85%AC%E5%BC%8F">公式</h5>
+<h4 class="mume-header" id="image-to-relu-conv1">image <span class="mathjax-exps">$&#x5C;to$</span> ReLU Conv1</h4>
 
+<ol>
+<li>image(28 * 28)<br>
+<br></li>
+<li>img <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> Conv1(256 * 20 * 20)<br>
+<br></li>
+<li>Conv1 <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=2, padding=&quot;VALID&quot;) + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> PrimaryCaps(256 * 6 * 6)<br>
+这里可能会有人奇怪图片为什么会画成(32 * 8 * 6 * 6)的形式，这是因为后面的路由算法是将一个长度为8的向量当做一个整体来计算的。</li>
+</ol>
+<br>
+<h4 class="mume-header" id="primarycaps-to-digitcaps">PrimaryCaps <span class="mathjax-exps">$&#x5C;to$</span> DigitCaps</h4>
+
+<ul>
+<li>这部分讲解从PrimaryCaps <span class="mathjax-exps">$&#x5C;to$</span> DigitCaps的计算过程，其中主要应用了<em>Routing-By-Agreement Mechanism</em></li>
+</ul>
+<p><strong>一张图表示他们之间的关系：</strong></p>
+<p><img src="./img/capsule_routing.png" alt=""></p>
+<br>
+<p><strong>公式</strong></p>
 <p><div class="mathjax-exps">$$&#x5C;hat{u}_{j|i} = W_{ij}u_i &#x5C;tag{1}$$</div></p>
 <ul>
 <li><span class="mathjax-exps">$u_i(i &#x5C;in [6*6*32])$</span>： 表示PrimaryCaps的某个8D的Capsule</li>
@@ -268,8 +299,6 @@ code.language-yaml {
 <li><span class="mathjax-exps">$squashing()$</span>： 非线性函数，保留了向量的方向，使长的向量越长，短的向量越短，并且长度都压缩在1之内</li>
 <li><span class="mathjax-exps">$v_j$</span>： <span class="mathjax-exps">$capsule_j$</span> 的output。在文章中应该就是指最后的输出DigitCaps，共有10个（因为有10个数字，即10类）Capsule。每个capsule有16维，每一维都代表着数字的某些属性（粗细、倾斜程度等等）。<strong>向量的长度代表了当前输入是类k的概率</strong>。</li>
 </ul>
-<p><strong>一张图表示他们之间的关系：</strong></p>
-<p><img src="./img/ui2vj.png" alt=""></p>
 <br>
 <h5 class="mume-header" id="margin-loss">Margin loss</h5>
 
@@ -364,6 +393,12 @@ code.language-yaml {
 <h3 class="mume-header" id="%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</h3>
 
 <p><a href="https://github.com/naturomics/CapsNet-Tensorflow">link</a></p>
+<p>代码中的实现流程如下</p>
+<ol>
+<li>image(28*28)</li>
+<li>img <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> Conv1(256 * 20 * 20)</li>
+<li>Conv1 <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=2, padding=&quot;VALID&quot;) + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span></li>
+</ol>
 <br>
 <ul>
 <li>CONV1_LAYER<br></li>
@@ -459,25 +494,50 @@ u_hat_stopped               <span class="token punctuation">(</span><span class=
 <li>Masking</li>
 </ul>
 <p>设DigitCaps的输出结果为x，batchsize=128，则Masking所做的是：</p>
-<p>将这部分是要用ground truth的onehot vector与DigitCaps的输出做element-wise multiply做masking，得到masked_v，<br>
-$$$$</p>
-<p>$$$$</p>
-<p>$$$$</p>
-<pre class="language-python">v_length <span class="token operator">=</span> <span class="token punctuation">(</span>reduce_sum<span class="token punctuation">(</span>caps2<span class="token operator">^</span><span class="token number">2</span><span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span> <span class="token operator">+</span> epsilon<span class="token punctuation">)</span><span class="token operator">^</span><span class="token number">1</span><span class="token operator">/</span><span class="token number">2</span>    <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-softmax_v <span class="token operator">=</span> softmax<span class="token punctuation">(</span>v_length_I<span class="token punctuation">)</span>                           <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-argmax_idx <span class="token operator">=</span>
-</pre>
+<p>将这部分是要用ground truth的onehot vector与DigitCaps的输出做element-wise multiply(mask)，得到masked_v(128, 10, 16)，然后求DigitCaps的输出向量的长度，得到v_length(128, 10, 1, 1)</p>
+<br>
+<ul>
+<li>Decoder</li>
+</ul>
+<p>这里将Masking得到的masked_v拉成一维向量(128, 160)，放入fc1层(nun_outputs=512)，得到的结果再放入fc2(num_outputs=1024)，得到的结果再放入fc3(nun_outputs=784, activation_fn=sigmoid)，最后得到decoded，这个decoded就可以reshape一下得到重构的图像。</p>
+<br>
+<p><strong>def loss</strong></p>
+<ul>
+<li>margin_loss</li>
+</ul>
+<p><img src="./img/cap_lossfunc.png" alt=""></p>
+<ul>
+<li>reconstruction loss</li>
+</ul>
+<p>将x(128, 28, 28, 1)reshape成orgin(128, 784)<br>
+squared = tf.square(self.decoded - orgin)<br>
+self.reconstruction_err = tf.reduce_mean(squared)</p>
+<ul>
+<li>总的loss</li>
+</ul>
+<p>total_loss = margin_loss + reconstruction_err * cfg.regularization_scale</p>
+<br>
+<p><strong>main</strong></p>
+<p>num_batch = 468<br>
+num_test_batch = 78</p>
 
       </div>
       <div class="md-sidebar-toc"><ul>
 <li><a href="#intro">Intro</a></li>
 <li><a href="#main">Main</a>
 <ul>
-<li><a href="#capsnet">CapsNet</a><br>
-* <a href="#%E7%BB%93%E6%9E%84">结构</a><br>
-* <a href="#%E5%85%AC%E5%BC%8F">公式</a><br>
-* <a href="#margin-loss">Margin loss</a><br>
-* <a href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</a></li>
+<li><a href="#capsnet">CapsNet</a>
+<ul>
+<li><a href="#%E7%BB%93%E6%9E%84%E6%A6%82%E8%BF%B0">结构概述</a></li>
+<li><a href="#image-to-relu-conv1">image <span class="mathjax-exps">$&#x5C;to$</span> ReLU Conv1</a></li>
+<li><a href="#primarycaps-to-digitcaps">PrimaryCaps <span class="mathjax-exps">$&#x5C;to$</span> DigitCaps</a>
+<ul>
+<li><a href="#margin-loss">Margin loss</a></li>
+<li><a href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li><a href="#%E7%8E%84%E5%AD%A6">玄学</a></li>
 <li><a href="#%E5%AD%98%E7%96%91">存疑</a></li>
 <li><a href="#%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</a></li>

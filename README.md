@@ -1,4 +1,4 @@
-## Start
+## 笔记
 
 本目录用于保存研究生学习生涯笔记。由于涉及比较多的公式，而github不支持MathJax或者LaTeX，所以如果想获得更好的阅读体验请安装chrome插件[GitHub with MathJax](https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima)。或者有更好的方法恳请告知。
 

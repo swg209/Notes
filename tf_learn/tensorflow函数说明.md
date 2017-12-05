@@ -1,4 +1,4 @@
-### 查找Tensorflow的常用函数
+### Tensorflow的常用函数
 [点击这里](http://blog.csdn.net/lenbow/article/details/52218551)
 
 <br>
