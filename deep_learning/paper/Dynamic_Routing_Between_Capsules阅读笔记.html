@@ -220,64 +220,85 @@ code.language-yaml {
 <li><a href="#intro">Intro</a></li>
 <li><a href="#main">Main</a>
 <ul>
+<li><a href="#%E4%BD%95%E4%B8%BAcapsule">何为Capsule</a></li>
 <li><a href="#capsnet">CapsNet</a>
 <ul>
 <li><a href="#%E7%BB%93%E6%9E%84%E6%A6%82%E8%BF%B0">结构概述</a></li>
-<li><a href="#image-to-relu-conv1">image <span class="mathjax-exps"><p>[MUMETOC]</p>
-#x5C;to$</span> ReLU Conv1</a></li>
-<li><a href="#primarycaps-to-digitcaps">PrimaryCaps <span class="mathjax-exps"><p>[MUMETOC]</p>
-#x5C;to$</span> DigitCaps</a>
-<ul>
-<li><a href="#margin-loss">Margin loss</a></li>
-<li><a href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</a></li>
+<li><a href="#image-to-relu-conv1-to-primarycaps">image to ReLU Conv1 to PrimaryCaps</a></li>
+<li><a href="#primarycaps-to-digitcaps-dynamic-routing">PrimaryCaps to DigitCaps &amp; Dynamic Routing</a></li>
+<li><a href="#reconstruction">Reconstruction</a></li>
+<li><a href="#total-loss">Total loss</a></li>
+<li><a href="#dynamic-routing%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">Dynamic Routing算法流程</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a href="#%E7%8E%84%E5%AD%A6">玄学</a></li>
-<li><a href="#%E5%AD%98%E7%96%91">存疑</a></li>
+<li><a href="#capsnet%E4%B8%8Etradictional-neuron%E7%9A%84%E5%AF%B9%E6%AF%94">CapsNet与tradictional neuron的对比</a></li>
+<li><a href="#%E8%A7%81%E8%A7%A3">见解</a></li>
 <li><a href="#%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</a></li>
 </ul>
 </li>
+<li><a href="#end">END</a></li>
+<li><a href="#%E8%8D%89%E7%A8%BF">草稿</a></li>
 </ul>
+<br>
 <h2 class="mume-header" id="intro">Intro</h2>
 
 <ul>
 <li>联系方式：wjy.f@qq.com</li>
 </ul>
 <p>由于涉及比较多的公式，而github不支持MathJax或者LaTeX，所以如果想获得更好的阅读体验请安装chrome插件<a href="https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima">GitHub with MathJax</a>，或者有更好的方法恳请告知。</p>
-<p>本文记录了阅读<a href="https://arxiv.org/pdf/1710.09829">《<em>Dynamic Routing Between Capsules</em>》</a>的理解与收获，若有错误欢迎指出。转载请注明出处。</p>
-<p>为了对文章有个大概的认识，先来介绍模型的结构，再结合代码理解实现。</p>
+<p>本文记录了阅读论文<a href="https://arxiv.org/pdf/1710.09829">《<em>Dynamic Routing Between Capsules</em>》</a>以及<a href="https://github.com/naturomics/CapsNet-Tensorflow">naturomics的代码</a>的理解与收获，若有错误欢迎指出。转载请注明出处。</p>
+<p>由于代码基本上都是按照文章思路来写的，所以为了不重复讲解，会在采取内容与代码一起讲解的形式。</p>
+<p>若想通过视频快速了解，可以看看下面两个链接，讲得比较生动易理解（不过还是推荐读论文）：</p>
+<ul>
+<li><a href="https://www.bilibili.com/video/av16594836/?from=search&amp;seid=12945685157419672339">Capsule Networks教程(by Aurélie)</a></li>
+<li><a href="https://www.bilibili.com/video/av16820289/">用Tensorflow实现Capsule(by Aurélie)</a></li>
+</ul>
+<br>
 <h2 class="mume-header" id="main">Main</h2>
 
+<br>
+<h3 class="mume-header" id="%E4%BD%95%E4%B8%BAcapsule">何为Capsule</h3>
+
+<p>Hinton早在2011年已经提出了<code>Capsule</code></p>
+<br>
 <h3 class="mume-header" id="capsnet">CapsNet</h3>
 
 <br>
 <h4 class="mume-header" id="%E7%BB%93%E6%9E%84%E6%A6%82%E8%BF%B0">结构概述</h4>
 
-<p>论文仅仅是提出了一个可行的方案，目的是为了证明<code>Capsule</code>这个思想的可行性，目前还较为粗略，有很多改进空间。下图是论文中所采用的神经网络结构：</p>
+<p>论文仅仅是提出了一个可行的方案，目的是为了证明<code>Capsule</code>这个思想的可行性，目前还较为粗略，有很多改进空间。论文有两个比较突出的创新点：</p>
+<ul>
+<li>采用 routing-by-agreement mechainsm 决定两层capsule之间的连接以及参数<span class="mathjax-exps">$c_{ij}$</span>的更新方式</li>
+<li>用向量输出替代标量输出</li>
+</ul>
+<p>下图是论文中所采用的神经网络结构：</p>
 <p><img src="./img/capsule_figure1.png" alt=""></p>
-<p>看完这幅图应该大概能理解CapsNet的结构。它先是对图像用了两次卷积得到PrimaryCaps，然后用<em>Routing-By-Agreement Mechanism</em>得到DigitCaps。<strong>TODO(DigitCaps后面那部分的说明)</strong>。<code>Capsule</code>指的就是PrimaryCaps中长度为8的向量，共有<code>32*6*6</code>个Capsule。之所以称之为Capsule是因为在计算最终的输出——DigitCaps的时候，是将一个长度为8的向量当做一个整体来计算的。详细的计算过程后面会讲。</p>
-<p>下面来详细讲讲CapsNet。</p>
+<p>看完这幅图应该大概能理解CapsNet的结构。它先是对图像用了两次卷积得到PrimaryCaps，然后用<em>Routing-By-Agreement Mechanism</em>得到DigitCaps。最后，求DigitCaps中的10个向量的长度，比如说最长的是第4个向量，那么就意味着CapsNet识别出当前输入的图片是数字4。</p>
+<p>在下文中，若 i 指<span class="mathjax-exps">$layer_l$</span>的某一个capsule ，那么 j 就是指<span class="mathjax-exps">$layer_{l+1}$</span>的某一个capsule。</p>
 <br>
-<h4 class="mume-header" id="image-to-relu-conv1">image <span class="mathjax-exps">$&#x5C;to$</span> ReLU Conv1</h4>
+<h4 class="mume-header" id="image-to-relu-conv1-to-primarycaps">image to ReLU Conv1 to PrimaryCaps</h4>
 
+<p>论文使用的是MNIST手写识别数据集，每张图片的大小都是28*28。</p>
+<p>流程：</p>
 <ol>
 <li>image(28 * 28)<br>
 <br></li>
 <li>img <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> Conv1(256 * 20 * 20)<br>
 <br></li>
 <li>Conv1 <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=2, padding=&quot;VALID&quot;) + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> PrimaryCaps(256 * 6 * 6)<br>
-这里可能会有人奇怪图片为什么会画成(32 * 8 * 6 * 6)的形式，这是因为后面的路由算法是将一个长度为8的向量当做一个整体来计算的。</li>
+这里可能会有人奇怪，这里不过是用了256个filter产生256个feature map，图片为什么会画成(32 * 8 * 6 * 6)的形式，这是因为后面的路由算法是将一个长度为8的向量当做一个整体来计算的。</li>
 </ol>
 <br>
-<h4 class="mume-header" id="primarycaps-to-digitcaps">PrimaryCaps <span class="mathjax-exps">$&#x5C;to$</span> DigitCaps</h4>
+<h4 class="mume-header" id="primarycaps-to-digitcaps-dynamic-routing">PrimaryCaps to DigitCaps &amp; Dynamic Routing</h4>
 
 <ul>
-<li>这部分讲解从PrimaryCaps <span class="mathjax-exps">$&#x5C;to$</span> DigitCaps的计算过程，其中主要应用了<em>Routing-By-Agreement Mechanism</em></li>
+<li>下面讲解从PrimaryCaps <span class="mathjax-exps">$&#x5C;to$</span> DigitCaps的计算过程，其中主要应用了<em>Routing-By-Agreement Mechanism</em></li>
 </ul>
 <p><strong>一张图表示他们之间的关系：</strong></p>
+<br>
 <p><img src="./img/capsule_routing.png" alt=""></p>
+<p>注意，图片中仅展示了一个<span class="mathjax-exps">$v_j,j&#x5C;in(1,10)$</span>的求解过程，其他<span class="mathjax-exps">$v_j$</span>同理可得。</p>
+<p>下面介绍其公式意义：</p>
 <br>
 <p><strong>公式</strong></p>
 <p><div class="mathjax-exps">$$&#x5C;hat{u}_{j|i} = W_{ij}u_i &#x5C;tag{1}$$</div></p>
@@ -287,8 +308,8 @@ code.language-yaml {
 </ul>
 <p><div class="mathjax-exps">$$c_{ij} = &#x5C;frac{exp(b_{ij})}{&#x5C;sum_kexp(b_{ik})} &#x5C;tag{2}$$</div></p>
 <ul>
-<li><span class="mathjax-exps">$b_{ij}$</span>： 初始化为0，更新方法是 <span class="mathjax-exps">$b_{ij} &#x5C;leftarrow b_{ij} + &#x5C;hat{u}_{j|i} &#x5C;cdot v_j$</span>。 其中，<span class="mathjax-exps">$a_{ij} = &#x5C;hat{u}_{j|i} &#x5C;cdot v_j$</span> 表示 <span class="mathjax-exps">$capsule_j$</span> 的输出 <span class="mathjax-exps">$v_j$</span> 跟 <span class="mathjax-exps">$capsule_i$</span> 的prediction vector的agreement（相似度）。<strong>值越大，表示两个向量的方向越相似，两个向量所表示的性质越相近</strong>。由<span class="mathjax-exps">$c_{ij}$</span>的公式知，<span class="mathjax-exps">$b_{ij}$</span> 的值越大（也就是两个向量的方向越相似），<strong><span class="mathjax-exps">$capsule_i$</span> 越倾向于将信息传送给 <span class="mathjax-exps">$capsule_j$</span></strong> 。</li>
-<li><span class="mathjax-exps">$c_{ij}$</span>： 由动态路由算法更新的coupling coefficients，并且<span class="mathjax-exps">$&#x5C;sum_{i}c_{ij} = 1$</span></li>
+<li><span class="mathjax-exps">$b_{ij}$</span>： 初始化为0，更新方法是 <span class="mathjax-exps">$b_{ij} &#x5C;leftarrow b_{ij} + &#x5C;hat{u}_{j|i} &#x5C;cdot v_j$</span>。 其中，<span class="mathjax-exps">$a_{ij} = &#x5C;hat{u}_{j|i} &#x5C;cdot v_j$</span> 表示 <span class="mathjax-exps">$capsule_j$</span>（即<span class="mathjax-exps">$v_j$</span>）跟 <span class="mathjax-exps">$capsule_i$</span> 的prediction vector（即<span class="mathjax-exps">$&#x5C;hat{u}_{j|i}$</span>）的agreement（契合度）。<strong>值越大，表示两个向量的方向越相似，两个向量所表示的性质越相近</strong>。由<span class="mathjax-exps">$c_{ij}$</span>的公式知，<span class="mathjax-exps">$b_{ij}$</span> 的值越大（意味着两个向量的方向越相似），<span class="mathjax-exps">$c_{ij}$</span>的值越大，<strong><span class="mathjax-exps">$capsule_i$</span> 越倾向于将信息传送给 <span class="mathjax-exps">$capsule_j$</span></strong> 。</li>
+<li><span class="mathjax-exps">$c_{ij}$</span>： 由动态路由算法更新的coupling coefficients，并且<span class="mathjax-exps">$&#x5C;sum_{i}c_{ij} = 1$</span>（此时<span class="mathjax-exps">$j$</span>为某确定的常数）</li>
 </ul>
 <p><div class="mathjax-exps">$$s_j = &#x5C;sum_{i}c_{ij}&#x5C;hat{u}_{j|i} &#x5C;tag{3}$$</div></p>
 <ul>
@@ -296,22 +317,29 @@ code.language-yaml {
 </ul>
 <p><div class="mathjax-exps">$$squash(s_j):v_j = &#x5C;frac{&#x5C;|s_j&#x5C;|^2}{1+&#x5C;|s_j&#x5C;|^2}&#x5C;frac{s_j}{&#x5C;|s_j&#x5C;|} &#x5C;tag{4}$$</div></p>
 <ul>
-<li><span class="mathjax-exps">$squashing()$</span>： 非线性函数，保留了向量的方向，使长的向量越长，短的向量越短，并且长度都压缩在1之内</li>
-<li><span class="mathjax-exps">$v_j$</span>： <span class="mathjax-exps">$capsule_j$</span> 的output。在文章中应该就是指最后的输出DigitCaps，共有10个（因为有10个数字，即10类）Capsule。每个capsule有16维，每一维都代表着数字的某些属性（粗细、倾斜程度等等）。<strong>向量的长度代表了当前输入是类k的概率</strong>。</li>
+<li><span class="mathjax-exps">$squash()$</span>： 非线性函数，保留了向量的方向，使长的向量越长，短的向量越短，并且长度都压缩在0-1之内</li>
+<li><span class="mathjax-exps">$v_j$</span>： 由dynamic routing计算出来的PrimaryCaps的output。在文章中就是指最后的输出DigitCaps，共有10个（因为有10个数字，即10类）Capsule。每个capsule有16维，每一维都代表着数字的某些属性（粗细、倾斜程度等等）。<strong>向量的长度代表了当前输入是类 <span class="mathjax-exps">$j$</span> 的概率</strong>。</li>
 </ul>
 <br>
-<h5 class="mume-header" id="margin-loss">Margin loss</h5>
+<h4 class="mume-header" id="reconstruction">Reconstruction</h4>
 
+<p>CapsNet使用Reconstruction作为Regularization。其做法是将DigitCaps的十个输出向量<span class="mathjax-exps">$v_j$</span>中长度最长的向量，经过3个FC层（结构如下图所示）重构出原来的图像，通过对比重构的图像和原图像的差异(pixel-wise)，得到reconstruction loss。用来重构的这三个FC层一起称为<code>Decoder</code>。</p>
+<p><img src="./img/capsule_decoder.png" alt=""></p>
+<br>
+<h4 class="mume-header" id="total-loss">Total loss</h4>
+
+<p>由于有多个类的存在，所以不能用cross entropy，论文中使用了SVM中常用的损失函数Margin loss来代替</p>
+<p><strong>Margin loss</strong></p>
 <p><img src="./img/cap_lossfunc.png" alt=""></p>
 <ul>
 <li>
-<p>k： class k</p>
+<p>k： class k，<span class="mathjax-exps">$k&#x5C;in[1, 10]$</span></p>
 </li>
 <li>
-<p><span class="mathjax-exps">$m^+=0.9, m^-=0.1$</span></p>
+<p><span class="mathjax-exps">$m^+=0.9, m^-=0.1$</span> （自己设定）</p>
 </li>
 <li>
-<p><span class="mathjax-exps">$&#x5C;lambda$</span> ：</p>
+<p><span class="mathjax-exps">$&#x5C;lambda$</span> （比例系数，用来调整两者的比重）：</p>
 <blockquote>
 <p>The λ down-weighting of the loss for absent digit classes stops the initial learning from shrinking the lengths of the activity vectors of all the digit capsules. We use λ = 0.5.</p>
 </blockquote>
@@ -324,7 +352,7 @@ code.language-yaml {
 <thead>
 <tr>
 <th>示例</th>
-<th>输入</th>
+<th>输入输出</th>
 <th><span class="mathjax-exps">$&#x5C;|v_k&#x5C;|$</span></th>
 <th><span class="mathjax-exps">$L_k$</span></th>
 </tr>
@@ -332,25 +360,25 @@ code.language-yaml {
 <tbody>
 <tr>
 <td>TT</td>
-<td>数字k</td>
+<td>输入数字k 预测结果为数字k</td>
 <td>比较大</td>
 <td>比较小</td>
 </tr>
 <tr>
 <td>TF</td>
-<td>数字k</td>
+<td>输入数字k 预测结果非数字k</td>
 <td>比较小</td>
 <td>比较大</td>
 </tr>
 <tr>
 <td>FT</td>
-<td>非数字k</td>
+<td>输入非数字k 预测结果为数字k</td>
 <td>比较大</td>
 <td>比较大</td>
 </tr>
 <tr>
 <td>FF</td>
-<td>非数字k</td>
+<td>输入非数字k 预测结果非数字k</td>
 <td>比较小</td>
 <td>比较小</td>
 </tr>
@@ -358,47 +386,235 @@ code.language-yaml {
 </table>
 </li>
 <li>
-<p>可以看出，在假阳性和假阴性的示例中，loss的值比较大。</p>
+<p>可以看出，在假阳性和假阴性的示例中，<span class="mathjax-exps">$L_k$</span>的值比较大。</p>
 </li>
 </ul>
 <br>
-<h5 class="mume-header" id="%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</h5>
-
-<p>下面看公式和Procedure1应该能明白它是怎么一个处理过程了。</p>
-<p><img src="./img/procedure1.png" alt=""></p>
-<p><strong>其中</strong>，若 i 指某一个capsule ，那么 j 就是这个capsule的parent capsule。对下面的公式来说也是一样。</p>
+<p><strong>Reconstruction loss</strong></p>
+<p>计算原图像与重构的图像在对应的pixel位置上的值之差，求和得到Reconstruction loss</p>
+<pre class="language-python">将原图像x<span class="token punctuation">(</span><span class="token number">28</span><span class="token punctuation">,</span> <span class="token number">28</span><span class="token punctuation">)</span>reshape成orgin<span class="token punctuation">(</span><span class="token number">784</span><span class="token punctuation">)</span>
+再将重构的图像decoded<span class="token punctuation">(</span><span class="token number">784</span><span class="token punctuation">)</span>
+squared <span class="token operator">=</span> square<span class="token punctuation">(</span>decoded <span class="token operator">-</span> orgin<span class="token punctuation">)</span>
+reconstruction_loss <span class="token operator">=</span> mean<span class="token punctuation">(</span>squared<span class="token punctuation">)</span>
+</pre>
+<p>即</p>
+<p><div class="mathjax-exps">$$Reconstruction Loss=&#x5C;frac{1}{784} * &#x5C;sum_{i=1}^{784}(decoded_i - orgin_i)^2$$</div></p>
 <br>
-<h3 class="mume-header" id="%E7%8E%84%E5%AD%A6">玄学</h3>
+<p>最后：</p>
+<p><div class="mathjax-exps">$$TotalLoss = MarginLoss + ReconstructionLoss$$</div></p>
+<br>
+<h4 class="mume-header" id="dynamic-routing%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">Dynamic Routing算法流程</h4>
 
-<p>论文仅仅介绍了capsule初步简单的实现，让大家知道capsule是有效的。而其核心思想</p>
-<p>CapsNet与tradictional neuron的对比（图片来自<a href="https://github.com/naturomics/CapsNet-Tensorflow">naturomics</a>）：</p>
+<br>
+<p><img src="./img/procedure1.png" alt=""></p>
+<br>
+<p>整个过程如下所示（图片来自<a href="https://github.com/naturomics/">naturomics</a>的ppt）：</p>
+<br>
+<p><img src="./img/capsule_routingbyagreement.png" alt=""></p>
+<br>
+<h3 class="mume-header" id="capsnet%E4%B8%8Etradictional-neuron%E7%9A%84%E5%AF%B9%E6%AF%94">CapsNet与tradictional neuron的对比</h3>
+
+<p>（图片来自<a href="https://github.com/naturomics/CapsNet-Tensorflow">naturomics</a>）：</p>
 <p><img src="https://github.com/naturomics/CapsNet-Tensorflow/raw/master/imgs/capsuleVSneuron.png" alt=""></p>
-<p>论文有两个比较突出的创新点：</p>
-<ul>
-<li>采用 routing-by-agreement mechainsm 决定两层capsule之间的连接以及参数<span class="mathjax-exps">$c_{ij}$</span>的更新方式</li>
-<li>用向量输出替代标量输出</li>
-</ul>
 <pre class="language-">&#x8FD9;&#x91CC;&#x5199;&#x80CC;&#x666F;&#xFF08;&#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x8FD9;&#x4E48;&#x6784;&#x9020;&#x6A21;&#x578B;&#xFF0C;&#x80CC;&#x540E;&#x7684;&#x795E;&#x7ECF;&#x79D1;&#x5B66;&#x77E5;&#x8BC6;)
 </pre>
 <br>
-<h3 class="mume-header" id="%E5%AD%98%E7%96%91">存疑</h3>
+<h3 class="mume-header" id="%E8%A7%81%E8%A7%A3">见解</h3>
 
+<p>Routing-by-agreement有以下几个好处：</p>
 <ul>
-<li>32个PrimaryCaps用的是同一个conv吗？</li>
-<li>CapsNet与普通神经网络的区别</li>
-<li>动态路由算法</li>
-<li>实体在模型中是否会有所表现</li>
+<li>由于上一层的capsule会逐渐倾向于将信息传到下一层与它相似的capsule，这样就能够给下一层capsule干净清晰的信号，减少噪声，从而更快地学习到entity</li>
+<li>通过追溯当前被激活的capsule的信号传输路径，我们可以操控part-whole中的part，并且清楚知道哪一个part属于哪一个entity（比如说识别一个由三角形和长方形组成的房屋，在<span class="mathjax-exps">$layer l$</span>可能有个capsule是检测三角形，有个capsule检测长方形，则在<span class="mathjax-exps">$layer l+1$</span>有能够得到检测房屋的capsule。此为ppart-whole的关系）。</li>
+<li>可以很容易地解析重叠的entity，比如重叠的数字识别。</li>
 </ul>
+<p>the capsules in the first layer try to predict what the second layer capsules will output</p>
 <br>
 <h3 class="mume-header" id="%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</h3>
 
-<p><a href="https://github.com/naturomics/CapsNet-Tensorflow">link</a></p>
-<p>代码中的实现流程如下</p>
-<ol>
-<li>image(28*28)</li>
-<li>img <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> Conv1(256 * 20 * 20)</li>
-<li>Conv1 <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=2, padding=&quot;VALID&quot;) + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span></li>
-</ol>
+<p><a href="https://github.com/naturomics/CapsNet-Tensorflow">代码link</a></p>
+<p>目录</p>
+<pre class="language-">CapsNet-Tensorflow
+  - capsLayer.py
+      &#x5B9A;&#x4E49;&#x4E86;capsLayer&#x7684;&#x5B9E;&#x73B0;&#x65B9;&#x6CD5;&#x3002;
+      &#x7531;&#x4E8E;&#x8BBA;&#x6587;&#x4E2D;&#x63D0;&#x53CA;&#x7684;capsLayer&#x6709;&#x4E24;&#x79CD;:
+        PrimaryCaps(without routing)
+        DigitCaps(with routing)
+      &#x6240;&#x4EE5;&#x8BE5;&#x6587;&#x4EF6;&#x91CC;&#x9762;&#x4E5F;&#x5305;&#x542B;&#x4E86;&#x8FD9;&#x4E24;&#x79CD;Layer&#x7684;&#x5B9E;&#x73B0;&#x65B9;&#x5F0F;
+      &#x53E6;&#x5916;&#xFF0C;&#x8BE5;&#x6587;&#x4EF6;&#x8FD8;&#x6709;:
+        routing
+        squash
+
+  - capsNet.py
+      &#x5B9A;&#x4E49;&#x4E86;CapsNet&#x7C7B;
+      &#x5305;&#x542B;&#xFF1A;
+        build_arch()  # &#x5B9A;&#x4E49;&#x7ED3;&#x6784;
+        loss()        # &#x5B9A;&#x4E49;loss
+
+  - config.py
+      &#x8D85;&#x53C2;&#x6570;&#x8BBE;&#x5B9A;
+
+  - main.py
+      &#x7A0B;&#x5E8F;&#x5165;&#x53E3;
+
+  - utils.py
+      &#x7528;&#x4E8E;&#x8BFB;&#x53D6;MNIST&#x7684;&#x6570;&#x636E;
+</pre>
+<p>主要代码：</p>
+<pre class="language-python"><span class="token keyword">class</span> <span class="token class-name">CapsNet</span><span class="token punctuation">(</span>object<span class="token punctuation">)</span><span class="token punctuation">:</span>
+    <span class="token keyword">def</span> <span class="token function">__init__</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> is_training<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+        self<span class="token punctuation">.</span>graph <span class="token operator">=</span> tf<span class="token punctuation">.</span>Graph<span class="token punctuation">(</span><span class="token punctuation">)</span>
+        <span class="token keyword">with</span> self<span class="token punctuation">.</span>graph<span class="token punctuation">.</span>as_default<span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token keyword">if</span> is_training<span class="token punctuation">:</span>  <span class="token comment" spellcheck="true"># 如果是在训练过程中</span>
+                self<span class="token punctuation">.</span>X<span class="token punctuation">,</span> self<span class="token punctuation">.</span>labels <span class="token operator">=</span> get_batch_data<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment" spellcheck="true"># 获取training data和label</span>
+                self<span class="token punctuation">.</span>Y <span class="token operator">=</span> tf<span class="token punctuation">.</span>one_hot<span class="token punctuation">(</span>self<span class="token punctuation">.</span>labels<span class="token punctuation">,</span> depth<span class="token operator">=</span><span class="token number">10</span><span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span> dtype<span class="token operator">=</span>tf<span class="token punctuation">.</span>float32<span class="token punctuation">)</span>  <span class="token comment" spellcheck="true"># 对label做onehot</span>
+
+                self<span class="token punctuation">.</span>build_arch<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment" spellcheck="true"># 搭建CapsNet的结构</span>
+                self<span class="token punctuation">.</span>loss<span class="token punctuation">(</span><span class="token punctuation">)</span>        <span class="token comment" spellcheck="true"># 定义loss</span>
+                self<span class="token punctuation">.</span>_summary<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+                <span class="token comment" spellcheck="true"># t_vars = tf.trainable_variables()</span>
+                self<span class="token punctuation">.</span>global_step <span class="token operator">=</span> tf<span class="token punctuation">.</span>Variable<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> name<span class="token operator">=</span><span class="token string">'global_step'</span><span class="token punctuation">,</span> trainable<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">)</span>
+                self<span class="token punctuation">.</span>optimizer <span class="token operator">=</span> tf<span class="token punctuation">.</span>train<span class="token punctuation">.</span>AdamOptimizer<span class="token punctuation">(</span><span class="token punctuation">)</span>  <span class="token comment" spellcheck="true"># 使用AdamOptimizer</span>
+                self<span class="token punctuation">.</span>train_op <span class="token operator">=</span> self<span class="token punctuation">.</span>optimizer<span class="token punctuation">.</span>minimize<span class="token punctuation">(</span>self<span class="token punctuation">.</span>total_loss<span class="token punctuation">,</span> global_step<span class="token operator">=</span>self<span class="token punctuation">.</span>global_step<span class="token punctuation">)</span>  <span class="token comment" spellcheck="true"># var_list=t_vars)</span>
+            <span class="token keyword">elif</span> cfg<span class="token punctuation">.</span>mask_with_y<span class="token punctuation">:</span>  <span class="token comment" spellcheck="true"># 如果是已经训练完</span>
+                self<span class="token punctuation">.</span>X <span class="token operator">=</span> tf<span class="token punctuation">.</span>placeholder<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>float32<span class="token punctuation">,</span>
+                                        shape<span class="token operator">=</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">28</span><span class="token punctuation">,</span> <span class="token number">28</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                self<span class="token punctuation">.</span>Y <span class="token operator">=</span> tf<span class="token punctuation">.</span>placeholder<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>float32<span class="token punctuation">,</span> shape<span class="token operator">=</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                self<span class="token punctuation">.</span>build_arch<span class="token punctuation">(</span><span class="token punctuation">)</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                self<span class="token punctuation">.</span>X <span class="token operator">=</span> tf<span class="token punctuation">.</span>placeholder<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>float32<span class="token punctuation">,</span>
+                                        shape<span class="token operator">=</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">28</span><span class="token punctuation">,</span> <span class="token number">28</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                self<span class="token punctuation">.</span>build_arch<span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+        tf<span class="token punctuation">.</span>logging<span class="token punctuation">.</span>info<span class="token punctuation">(</span><span class="token string">'Seting up the main structure'</span><span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">build_arch</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token keyword">with</span> tf<span class="token punctuation">.</span>variable_scope<span class="token punctuation">(</span><span class="token string">'Conv1_layer'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment" spellcheck="true"># Conv1, [batch_size, 20, 20, 256]</span>
+            conv1 <span class="token operator">=</span> tf<span class="token punctuation">.</span>contrib<span class="token punctuation">.</span>layers<span class="token punctuation">.</span>conv2d<span class="token punctuation">(</span>self<span class="token punctuation">.</span>X<span class="token punctuation">,</span> num_outputs<span class="token operator">=</span><span class="token number">256</span><span class="token punctuation">,</span>
+                                             kernel_size<span class="token operator">=</span><span class="token number">9</span><span class="token punctuation">,</span> stride<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">,</span>
+                                             padding<span class="token operator">=</span><span class="token string">'VALID'</span><span class="token punctuation">)</span>
+            <span class="token keyword">assert</span> conv1<span class="token punctuation">.</span>get_shape<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">20</span><span class="token punctuation">,</span> <span class="token number">256</span><span class="token punctuation">]</span>
+
+        <span class="token comment" spellcheck="true"># Primary Capsules layer, return [batch_size, 1152, 8, 1]</span>
+        <span class="token keyword">with</span> tf<span class="token punctuation">.</span>variable_scope<span class="token punctuation">(</span><span class="token string">'PrimaryCaps_layer'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            primaryCaps <span class="token operator">=</span> CapsLayer<span class="token punctuation">(</span>num_outputs<span class="token operator">=</span><span class="token number">32</span><span class="token punctuation">,</span> vec_len<span class="token operator">=</span><span class="token number">8</span><span class="token punctuation">,</span> with_routing<span class="token operator">=</span><span class="token boolean">False</span><span class="token punctuation">,</span> layer_type<span class="token operator">=</span><span class="token string">'CONV'</span><span class="token punctuation">)</span>
+            caps1 <span class="token operator">=</span> primaryCaps<span class="token punctuation">(</span>conv1<span class="token punctuation">,</span> kernel_size<span class="token operator">=</span><span class="token number">9</span><span class="token punctuation">,</span> stride<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span>
+            <span class="token keyword">assert</span> caps1<span class="token punctuation">.</span>get_shape<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span>
+
+        <span class="token comment" spellcheck="true"># DigitCaps layer, return [batch_size, 10, 16, 1]</span>
+        <span class="token keyword">with</span> tf<span class="token punctuation">.</span>variable_scope<span class="token punctuation">(</span><span class="token string">'DigitCaps_layer'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            digitCaps <span class="token operator">=</span> CapsLayer<span class="token punctuation">(</span>num_outputs<span class="token operator">=</span><span class="token number">10</span><span class="token punctuation">,</span> vec_len<span class="token operator">=</span><span class="token number">16</span><span class="token punctuation">,</span> with_routing<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">,</span> layer_type<span class="token operator">=</span><span class="token string">'FC'</span><span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>caps2 <span class="token operator">=</span> digitCaps<span class="token punctuation">(</span>caps1<span class="token punctuation">)</span>
+
+        <span class="token comment" spellcheck="true"># Decoder structure in Fig. 2</span>
+        <span class="token comment" spellcheck="true"># 1. Do masking, how:</span>
+        <span class="token keyword">with</span> tf<span class="token punctuation">.</span>variable_scope<span class="token punctuation">(</span><span class="token string">'Masking'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            <span class="token comment" spellcheck="true"># a). calc ||v_c||, then do softmax(||v_c||)</span>
+            <span class="token comment" spellcheck="true"># [batch_size, 10, 16, 1] => [batch_size, 10, 1, 1]</span>
+            self<span class="token punctuation">.</span>v_length <span class="token operator">=</span> tf<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>reduce_sum<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>square<span class="token punctuation">(</span>self<span class="token punctuation">.</span>caps2<span class="token punctuation">)</span><span class="token punctuation">,</span>
+                                                  axis<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> keep_dims<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span> <span class="token operator">+</span> epsilon<span class="token punctuation">)</span>
+            self<span class="token punctuation">.</span>softmax_v <span class="token operator">=</span> tf<span class="token punctuation">.</span>nn<span class="token punctuation">.</span>softmax<span class="token punctuation">(</span>self<span class="token punctuation">.</span>v_length<span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>
+            <span class="token keyword">assert</span> self<span class="token punctuation">.</span>softmax_v<span class="token punctuation">.</span>get_shape<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span>
+
+            <span class="token comment" spellcheck="true"># b). pick out the index of max softmax val of the 10 caps</span>
+            <span class="token comment" spellcheck="true"># [batch_size, 10, 1, 1] => [batch_size] (index)</span>
+            self<span class="token punctuation">.</span>argmax_idx <span class="token operator">=</span> tf<span class="token punctuation">.</span>to_int32<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>argmax<span class="token punctuation">(</span>self<span class="token punctuation">.</span>softmax_v<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            <span class="token keyword">assert</span> self<span class="token punctuation">.</span>argmax_idx<span class="token punctuation">.</span>get_shape<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span>
+            self<span class="token punctuation">.</span>argmax_idx <span class="token operator">=</span> tf<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>self<span class="token punctuation">.</span>argmax_idx<span class="token punctuation">,</span> shape<span class="token operator">=</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+            <span class="token comment" spellcheck="true"># Method 1.</span>
+            <span class="token keyword">if</span> <span class="token operator">not</span> cfg<span class="token punctuation">.</span>mask_with_y<span class="token punctuation">:</span>
+                <span class="token comment" spellcheck="true"># c). indexing</span>
+                <span class="token comment" spellcheck="true"># It's not easy to understand the indexing process with argmax_idx</span>
+                <span class="token comment" spellcheck="true"># as we are 3-dim animal</span>
+                masked_v <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+                <span class="token keyword">for</span> batch_size <span class="token keyword">in</span> range<span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">)</span><span class="token punctuation">:</span>
+                    v <span class="token operator">=</span> self<span class="token punctuation">.</span>caps2<span class="token punctuation">[</span>batch_size<span class="token punctuation">]</span><span class="token punctuation">[</span>self<span class="token punctuation">.</span>argmax_idx<span class="token punctuation">[</span>batch_size<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token punctuation">:</span><span class="token punctuation">]</span>
+                    masked_v<span class="token punctuation">.</span>append<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>v<span class="token punctuation">,</span> shape<span class="token operator">=</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+                self<span class="token punctuation">.</span>masked_v <span class="token operator">=</span> tf<span class="token punctuation">.</span>concat<span class="token punctuation">(</span>masked_v<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">0</span><span class="token punctuation">)</span>
+                <span class="token keyword">assert</span> self<span class="token punctuation">.</span>masked_v<span class="token punctuation">.</span>get_shape<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span>
+            <span class="token comment" spellcheck="true"># Method 2. masking with true label, default mode</span>
+            <span class="token keyword">else</span><span class="token punctuation">:</span>
+                <span class="token comment" spellcheck="true"># self.masked_v = tf.matmul(tf.squeeze(self.caps2), tf.reshape(self.Y, (-1, 10, 1)), transpose_a=True)</span>
+                self<span class="token punctuation">.</span>masked_v <span class="token operator">=</span> tf<span class="token punctuation">.</span>multiply<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>squeeze<span class="token punctuation">(</span>self<span class="token punctuation">.</span>caps2<span class="token punctuation">)</span><span class="token punctuation">,</span> tf<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>self<span class="token punctuation">.</span>Y<span class="token punctuation">,</span> <span class="token punctuation">(</span><span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+                self<span class="token punctuation">.</span>v_length <span class="token operator">=</span> tf<span class="token punctuation">.</span>sqrt<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>reduce_sum<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>square<span class="token punctuation">(</span>self<span class="token punctuation">.</span>caps2<span class="token punctuation">)</span><span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">,</span> keep_dims<span class="token operator">=</span><span class="token boolean">True</span><span class="token punctuation">)</span> <span class="token operator">+</span> epsilon<span class="token punctuation">)</span>
+
+        <span class="token comment" spellcheck="true"># 2. Reconstructe the MNIST images with 3 FC layers</span>
+        <span class="token comment" spellcheck="true"># [batch_size, 1, 16, 1] => [batch_size, 16] => [batch_size, 512]</span>
+        <span class="token keyword">with</span> tf<span class="token punctuation">.</span>variable_scope<span class="token punctuation">(</span><span class="token string">'Decoder'</span><span class="token punctuation">)</span><span class="token punctuation">:</span>
+            vector_j <span class="token operator">=</span> tf<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>self<span class="token punctuation">.</span>masked_v<span class="token punctuation">,</span> shape<span class="token operator">=</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+            fc1 <span class="token operator">=</span> tf<span class="token punctuation">.</span>contrib<span class="token punctuation">.</span>layers<span class="token punctuation">.</span>fully_connected<span class="token punctuation">(</span>vector_j<span class="token punctuation">,</span> num_outputs<span class="token operator">=</span><span class="token number">512</span><span class="token punctuation">)</span>
+            <span class="token keyword">assert</span> fc1<span class="token punctuation">.</span>get_shape<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">512</span><span class="token punctuation">]</span>
+            fc2 <span class="token operator">=</span> tf<span class="token punctuation">.</span>contrib<span class="token punctuation">.</span>layers<span class="token punctuation">.</span>fully_connected<span class="token punctuation">(</span>fc1<span class="token punctuation">,</span> num_outputs<span class="token operator">=</span><span class="token number">1024</span><span class="token punctuation">)</span>
+            <span class="token keyword">assert</span> fc2<span class="token punctuation">.</span>get_shape<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">1024</span><span class="token punctuation">]</span>
+            self<span class="token punctuation">.</span>decoded <span class="token operator">=</span> tf<span class="token punctuation">.</span>contrib<span class="token punctuation">.</span>layers<span class="token punctuation">.</span>fully_connected<span class="token punctuation">(</span>fc2<span class="token punctuation">,</span> num_outputs<span class="token operator">=</span><span class="token number">784</span><span class="token punctuation">,</span> activation_fn<span class="token operator">=</span>tf<span class="token punctuation">.</span>sigmoid<span class="token punctuation">)</span>
+
+    <span class="token keyword">def</span> <span class="token function">loss</span><span class="token punctuation">(</span>self<span class="token punctuation">)</span><span class="token punctuation">:</span>
+        <span class="token comment" spellcheck="true"># 1. The margin loss</span>
+
+        <span class="token comment" spellcheck="true"># [batch_size, 10, 1, 1]</span>
+        <span class="token comment" spellcheck="true"># max_l = max(0, m_plus-||v_c||)^2</span>
+        max_l <span class="token operator">=</span> tf<span class="token punctuation">.</span>square<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>maximum<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">.</span><span class="token punctuation">,</span> cfg<span class="token punctuation">.</span>m_plus <span class="token operator">-</span> self<span class="token punctuation">.</span>v_length<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token comment" spellcheck="true"># max_r = max(0, ||v_c||-m_minus)^2</span>
+        max_r <span class="token operator">=</span> tf<span class="token punctuation">.</span>square<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>maximum<span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">.</span><span class="token punctuation">,</span> self<span class="token punctuation">.</span>v_length <span class="token operator">-</span> cfg<span class="token punctuation">.</span>m_minus<span class="token punctuation">)</span><span class="token punctuation">)</span>
+        <span class="token keyword">assert</span> max_l<span class="token punctuation">.</span>get_shape<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">==</span> <span class="token punctuation">[</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span>
+
+        <span class="token comment" spellcheck="true"># reshape: [batch_size, 10, 1, 1] => [batch_size, 10]</span>
+        max_l <span class="token operator">=</span> tf<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>max_l<span class="token punctuation">,</span> shape<span class="token operator">=</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        max_r <span class="token operator">=</span> tf<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>max_r<span class="token punctuation">,</span> shape<span class="token operator">=</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+        <span class="token comment" spellcheck="true"># calc T_c: [batch_size, 10]</span>
+        <span class="token comment" spellcheck="true"># T_c = Y, is my understanding correct? Try it.</span>
+        T_c <span class="token operator">=</span> self<span class="token punctuation">.</span>Y
+        <span class="token comment" spellcheck="true"># [batch_size, 10], element-wise multiply</span>
+        L_c <span class="token operator">=</span> T_c <span class="token operator">*</span> max_l <span class="token operator">+</span> cfg<span class="token punctuation">.</span>lambda_val <span class="token operator">*</span> <span class="token punctuation">(</span><span class="token number">1</span> <span class="token operator">-</span> T_c<span class="token punctuation">)</span> <span class="token operator">*</span> max_r
+
+        self<span class="token punctuation">.</span>margin_loss <span class="token operator">=</span> tf<span class="token punctuation">.</span>reduce_mean<span class="token punctuation">(</span>tf<span class="token punctuation">.</span>reduce_sum<span class="token punctuation">(</span>L_c<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+
+        <span class="token comment" spellcheck="true"># 2. The reconstruction loss</span>
+        orgin <span class="token operator">=</span> tf<span class="token punctuation">.</span>reshape<span class="token punctuation">(</span>self<span class="token punctuation">.</span>X<span class="token punctuation">,</span> shape<span class="token operator">=</span><span class="token punctuation">(</span>cfg<span class="token punctuation">.</span>batch_size<span class="token punctuation">,</span> <span class="token operator">-</span><span class="token number">1</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
+        squared <span class="token operator">=</span> tf<span class="token punctuation">.</span>square<span class="token punctuation">(</span>self<span class="token punctuation">.</span>decoded <span class="token operator">-</span> orgin<span class="token punctuation">)</span>
+        self<span class="token punctuation">.</span>reconstruction_err <span class="token operator">=</span> tf<span class="token punctuation">.</span>reduce_mean<span class="token punctuation">(</span>squared<span class="token punctuation">)</span>
+
+        <span class="token comment" spellcheck="true"># 3. Total loss</span>
+        <span class="token comment" spellcheck="true"># The paper uses sum of squared error as reconstruction error, but we</span>
+        <span class="token comment" spellcheck="true"># have used reduce_mean in `# 2 The reconstruction loss` to calculate</span>
+        <span class="token comment" spellcheck="true"># mean squared error. In order to keep in line with the paper,the</span>
+        <span class="token comment" spellcheck="true"># regularization scale should be 0.0005*784=0.392</span>
+        self<span class="token punctuation">.</span>total_loss <span class="token operator">=</span> self<span class="token punctuation">.</span>margin_loss <span class="token operator">+</span> cfg<span class="token punctuation">.</span>regularization_scale <span class="token operator">*</span> self<span class="token punctuation">.</span>reconstruction_err
+
+</pre>
+<br>
+<h2 class="mume-header" id="end">END</h2>
+
+<br>
+<hr>
+<h2 class="mume-header" id="%E8%8D%89%E7%A8%BF">草稿</h2>
+
+<ul>
+<li>
+<p>32个PrimaryCaps用的是同一个conv吗？</p>
+</li>
+<li>
+<p>CapsNet与普通神经网络的区别</p>
+</li>
+<li>
+<p>动态路由算法</p>
+</li>
+<li>
+<p>实体在模型中是否会有所表现</p>
+</li>
+<li>
+<p>解释为什么长度能表示存在的概率，方向为什么表示性质</p>
+</li>
+<li>
+<p>搞清楚PrimaryCaps到底用了多少个conv</p>
+</li>
+</ul>
+<p>Now that we know that the rectangle and triangle are part of a boat, the outputs of the rectangle capsule and triangle capsule really concern only the boat capsule, there's no need to send these outputs to any other capsule, this would just add noise. They should send only to the boat capsule.<br>
+This is called routing by agreement.Benefits:1. 由于caposule的output只routed to下一层相似的capsule，这就能够给下一层capsule一个干净清晰的信号，从而能够更好的学习到实体。2. 通过追溯被激活的capsule的信号传输路径，我们就可以很容易地操控part-whole中的part，和清楚地知道哪一个part属于哪一个object。3. routing-by-agreement可以很容易地解析重叠的object</p>
 <br>
 <ul>
 <li>CONV1_LAYER<br></li>
@@ -520,29 +736,35 @@ self.reconstruction_err = tf.reduce_mean(squared)</p>
 <p><strong>main</strong></p>
 <p>num_batch = 468<br>
 num_test_batch = 78</p>
+<p><strong>李宏毅 capsule</strong></p>
+<ul>
+<li>CapsNet最后学习出来的capsule是“i know the difference, but i don't react to it”</li>
+<li>dynamic routing work不work，需要做一个实验，就是看c用backpropagation学出来跟用dynamic routing学出来哪个效果更好</li>
+</ul>
 
       </div>
       <div class="md-sidebar-toc"><ul>
 <li><a href="#intro">Intro</a></li>
 <li><a href="#main">Main</a>
 <ul>
+<li><a href="#%E4%BD%95%E4%B8%BAcapsule">何为Capsule</a></li>
 <li><a href="#capsnet">CapsNet</a>
 <ul>
 <li><a href="#%E7%BB%93%E6%9E%84%E6%A6%82%E8%BF%B0">结构概述</a></li>
-<li><a href="#image-to-relu-conv1">image <span class="mathjax-exps">$&#x5C;to$</span> ReLU Conv1</a></li>
-<li><a href="#primarycaps-to-digitcaps">PrimaryCaps <span class="mathjax-exps">$&#x5C;to$</span> DigitCaps</a>
-<ul>
-<li><a href="#margin-loss">Margin loss</a></li>
-<li><a href="#%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">算法流程</a></li>
+<li><a href="#image-to-relu-conv1-to-primarycaps">image to ReLU Conv1 to PrimaryCaps</a></li>
+<li><a href="#primarycaps-to-digitcaps-dynamic-routing">PrimaryCaps to DigitCaps &amp; Dynamic Routing</a></li>
+<li><a href="#reconstruction">Reconstruction</a></li>
+<li><a href="#total-loss">Total loss</a></li>
+<li><a href="#dynamic-routing%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">Dynamic Routing算法流程</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li><a href="#%E7%8E%84%E5%AD%A6">玄学</a></li>
-<li><a href="#%E5%AD%98%E7%96%91">存疑</a></li>
+<li><a href="#capsnet%E4%B8%8Etradictional-neuron%E7%9A%84%E5%AF%B9%E6%AF%94">CapsNet与tradictional neuron的对比</a></li>
+<li><a href="#%E8%A7%81%E8%A7%A3">见解</a></li>
 <li><a href="#%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</a></li>
 </ul>
 </li>
+<li><a href="#end">END</a></li>
+<li><a href="#%E8%8D%89%E7%A8%BF">草稿</a></li>
 </ul>
 </div>
       <a id="sidebar-toc-btn">≡</a>
