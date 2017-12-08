@@ -80,14 +80,14 @@ CapsNet的结构是Image(input)->Conv1->PrimaryCaps->DigitCaps(output)->Reconstr
 
 **公式**
 
-$$\hat{u}_{j|i} = W_{ij}u_i \tag{1}$$
+ $$\hat{u}_{j|i} = W_{ij}u_i \tag{1}$$
 
-- $u_i(i \in [6*6*32])$： 表示PrimaryCaps的某个8D的Capsule
+- $u_i(i \in [6 * 6 * 32])$： 表示PrimaryCaps的某个8D的Capsule
 - $\hat{u}_{j|i}$： 论文中称之为低一层的capsules的“prediction vectors”
 
 $$c_{ij} = \frac{exp(b_{ij})}{\sum_kexp(b_{ik})} \tag{2}$$
 
-- $b_{ij}$： 初始化为0，更新方法是 $b_{ij} \leftarrow b_{ij} + \hat{u}_{j|i} \cdot v_j$。 其中，$a_{ij} = \hat{u}_{j|i} \cdot v_j$ 表示 $capsule_j$（即$v_j$）跟 $capsule_i$ 的prediction vector（即$\hat{u}_{j|i}$）的agreement（契合度）。**值越大，表示两个向量的方向越相似，两个向量所表示的性质越相近**。由$c_{ij}$的公式知，$b_{ij}$ 的值越大（意味着两个向量的方向越相似），$c_{ij}$的值越大，**$capsule_i$ 越倾向于将信息传送给 $capsule_j$** 。
+- $b_{ij}$： 初始化为0，更新方法是$b_{ij} \leftarrow b_{ij} + \hat{u}_{j|i}v_j$。 其中$a_{ij} = \hat{u}_{j|i}v_j$表示$capsule_j$（即$v_j$）跟$capsule_i$的prediction vector（即$\hat{u}_{j|i}$）的agreement（契合度）。**值越大，表示两个向量的方向越相似，两个向量所表示的性质越相近**。由$c_{ij}$的公式知，$b_{ij}$ 的值越大（意味着两个向量的方向越相似），$c_{ij}$的值越大，**$capsule_i$ 越倾向于将信息传送给 $capsule_j$** 。
 - $c_{ij}$： 由动态路由算法更新的coupling coefficients，并且$\sum_{i}c_{ij} = 1$（此时$j$为某确定的常数）
 
 $$s_j = \sum_{i}c_{ij}\hat{u}_{j|i} \tag{3}$$
