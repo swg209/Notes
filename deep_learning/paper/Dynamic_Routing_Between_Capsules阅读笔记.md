@@ -4,13 +4,9 @@
 
 ## Intro
 
-- 联系方式：wjy.f@qq.com
-
 由于涉及比较多的公式，而github不支持MathJax或者LaTeX，所以如果想获得更好的阅读体验请安装chrome插件[GitHub with MathJax](https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima)，或者有更好的方法恳请告知。
 
-本文记录了阅读论文[《*Dynamic Routing Between Capsules*》](https://arxiv.org/pdf/1710.09829)以及[naturomics的代码](https://github.com/naturomics/CapsNet-Tensorflow)的理解与收获，若有错误欢迎指出。转载请注明出处。
-
-由于代码基本上都是按照文章思路来写的，所以为了不重复讲解，会在采取内容与代码一起讲解的形式。
+本文记录了阅读论文[《*Dynamic Routing Between Capsules*》](https://arxiv.org/pdf/1710.09829)以及[naturomics的代码](https://github.com/naturomics/CapsNet-Tensorflow)的理解与收获，若有错误欢迎指出（wjy.f@qq.com），转载请注明出处。
 
 若想通过视频快速了解，可以看看下面两个链接，讲得比较生动易理解（不过还是推荐读论文）：
 
@@ -39,6 +35,8 @@
 看完这幅图应该大概能理解CapsNet的结构。它先是对图像用了两次卷积得到PrimaryCaps，然后用*Routing-By-Agreement Mechanism*得到DigitCaps。最后，求DigitCaps中的10个向量的长度，比如说最长的是第4个向量，那么就意味着CapsNet识别出当前输入的图片是数字4。
 
 看到这里，何为`Capsule`？在PrimaryCaps中，它指的是长度为8的向量，共6*6*32个。而在DigitCaps中，它指的是16维的向量，共10个。所以Capsule其实对应着传统神经网络的scalar，只是一个scalar能够表征的信息太少了，所以将其扩展为向量，这样它就能够表示更多的信息。有人说，之所以提出这种想法是因为Hinton观察到人的大脑不是像神经网络一样严格分层，而是一簇簇神经元作为一个整体的。
+
+CapsNet的结构是Image(input)->Conv1->PrimaryCaps->DigitCaps(output)->Reconstruction，下文也会按照这个顺序来讲解
 
 在下文中，若 i 指$layer_l$的某一个capsule ，那么 j 就是指$layer_{l+1}$的某一个capsule。
 
@@ -98,6 +96,22 @@ $$squash(s_j):v_j = \frac{\|s_j\|^2}{1+\|s_j\|^2}\frac{s_j}{\|s_j\|} \tag{4}$$
 
 <br>
 
+#### Dynamic Routing算法流程
+
+<br>
+
+![](./img/procedure1.png)
+
+<br>
+
+整个过程如下所示（图片来自[naturomics](https://github.com/naturomics/)的ppt）：
+
+<br>
+
+![](./img/capsule_routingbyagreement.png)
+
+<br>
+
 #### Reconstruction
 
 CapsNet使用Reconstruction作为Regularization。其做法是将DigitCaps的十个输出向量$v_j$中长度最长的向量，经过3个FC层（结构如下图所示）重构出原来的图像，通过对比重构的图像和原图像的差异(pixel-wise)，得到reconstruction loss。用来重构的这三个FC层一起称为`Decoder`。
@@ -151,21 +165,6 @@ $$Reconstruction Loss=\frac{1}{784} * \sum_{i=1}^{784}(decoded_i - orgin_i)^2$$
 
 $$TotalLoss = MarginLoss + ReconstructionLoss$$
 
-<br>
-
-#### Dynamic Routing算法流程
-
-<br>
-
-![](./img/procedure1.png)
-
-<br>
-
-整个过程如下所示（图片来自[naturomics](https://github.com/naturomics/)的ppt）：
-
-<br>
-
-![](./img/capsule_routingbyagreement.png)
 
 <br>
 
@@ -227,7 +226,9 @@ Routing-by-agreement有以下几个好处：
 
 [代码link](https://github.com/naturomics/CapsNet-Tensorflow)
 
-目录
+由于代码基本上都是按照文章思路来写的，所以不重复讲，而是介绍主要的结构。
+
+**目录**
 
 ```
 CapsNet-Tensorflow
@@ -386,153 +387,3 @@ class CapsNet(object):
         self.total_loss = self.margin_loss + cfg.regularization_scale * self.reconstruction_err
 
 ```
-
-<br>
-
-## END
-
-<br>
-
----
-
-## 草稿
-
-* 32个PrimaryCaps用的是同一个conv吗？
-* CapsNet与普通神经网络的区别
-* 动态路由算法
-* 实体在模型中是否会有所表现
-
-* 解释为什么长度能表示存在的概率，方向为什么表示性质
-* 搞清楚PrimaryCaps到底用了多少个conv
-
-Now that we know that the rectangle and triangle are part of a boat, the outputs of the rectangle capsule and triangle capsule really concern only the boat capsule, there's no need to send these outputs to any other capsule, this would just add noise. They should send only to the boat capsule.
-This is called routing by agreement.Benefits:1. 由于caposule的output只routed to下一层相似的capsule，这就能够给下一层capsule一个干净清晰的信号，从而能够更好的学习到实体。2. 通过追溯被激活的capsule的信号传输路径，我们就可以很容易地操控part-whole中的part，和清楚地知道哪一个part属于哪一个object。3. routing-by-agreement可以很容易地解析重叠的object
-
-
-<br>
-
-- CONV1_LAYER<br>
-
->conv1 = tf.contrib.layers.conv2d(self.X,num_outputs=256, kernel_size=9, stride=1, padding='VALID')
-
-<br>
-
-- PRIMARYCAPS_LAYER<br>
-
->primaryCaps = CapsLayer(num_outputs=32, vec_len=8, with_routing=False, layer_type='CONV')
-caps1 = primaryCaps(conv1, kernel_size=9, stride=2)
-
-在CapsLayer的实现的CONV中，使得输出为“self.num_outputs * self.vec_len”，问题是，这个设定是否意味着有num_outputs*vec_len个filter？
-
-是的。
-
-<br>
-
-- DIGITCAPS_LAYER<br>
-
-
-
-<br>
-
-- def squash(vector)
-
-计算过程：
-
-```
-# 将vector^2后，再将倒数第二维全部加起来
-vec_squared_norm = tf.reduce_sum(tf.square(vector), -2, keep_dims=True)
-```
-$$scalar = \frac{vecsqnorm}{(1+vecsqnorm)\sqrt{vecsqnorm+epsilon}}$$
-
-跟论文的公式一样
-
-<br>
-
-- def routing(input, b_IJ)
-
-| Variable | shape |
-| -------- | ----- |
-| input | (128, 1152, 1, 8, 1) to (128, 1152, 10, 8, 1) |
-| W | (1, 1152, 10, 8, 16) |
-| b_IJ | (128, 1152, 10, 1, 1) |
-
-函数的思路如下所示
-
-```python
-# 难道这个令人窒息的操作是传说中的权重共享？
-W (1, 1152, 10, 8, 16)
----tile--->
-W (128, 1152, 10, 8, 16)
-
-input (128, 1152, 1, 8, 1)
----tile--->
-input (128, 1152, 10, 8, 1)
-
-u_hat = matmul(W, input)    (128, 1152, 10, 16, 1)
-u_hat_stopped               (128, 1152, 10, 16, 1)
-
-for r_iter in range(迭代次数):
-  # b_IJ (128, 1152, 10, 1, 1)
-  # 对b_IJ的第三维做softmax
-  c_IJ = softmax(b_IJ, dim=2)   (128, 1152, 10, 1, 1)
-
-  if 最后一次迭代：
-    s_J = c_IJ * u_hat          (128, 1152, 10, 16, 1)
-    reducesum(s_J, axis=1)      (128, 1, 10, 16, 1)
-    v_J = squash(s_J)
-
-  if 不是最后一次迭代（这部分和Procedure1的第7步一样）：
-    s_J = c_IJ * u_hat_stopped  (128, 1152, 10, 16, 1)
-    reduce_sum(s_J, axis=1)     (128, 1, 10, 16, 1)
-    v_J = squash(s_J)
-    v_J_tiled = tf.tile(v_J, [1, 1152, 1, 1, 1])     (128, 1152, 10, 16, 1)
-    u_produce_v = u_hat_stopped_T * v_J_tiled        (128, 1152, 10, 1, 1)
-    b_IJ += u_produce_v
-
-
-```
-
-<br>
-
-- Masking
-
-设DigitCaps的输出结果为x，batchsize=128，则Masking所做的是：
-
-将这部分是要用ground truth的onehot vector与DigitCaps的输出做element-wise multiply(mask)，得到masked_v(128, 10, 16)，然后求DigitCaps的输出向量的长度，得到v_length(128, 10, 1, 1)
-
-<br>
-
-- Decoder
-
-这里将Masking得到的masked_v拉成一维向量(128, 160)，放入fc1层(nun_outputs=512)，得到的结果再放入fc2(num_outputs=1024)，得到的结果再放入fc3(nun_outputs=784, activation_fn=sigmoid)，最后得到decoded，这个decoded就可以reshape一下得到重构的图像。
-
-<br>
-
-**def loss**
-
-- margin_loss
-
-![](./img/cap_lossfunc.png)
-
-- reconstruction loss
-
-将x(128, 28, 28, 1)reshape成orgin(128, 784)
-squared = tf.square(self.decoded - orgin)
-self.reconstruction_err = tf.reduce_mean(squared)
-
-- 总的loss
-
-total_loss = margin_loss + reconstruction_err * cfg.regularization_scale
-
-<br>
-
-**main**
-
-num_batch = 468
-num_test_batch = 78
-
-
-**李宏毅 capsule**
-
-- CapsNet最后学习出来的capsule是“i know the difference, but i don't react to it”
-- dynamic routing work不work，需要做一个实验，就是看c用backpropagation学出来跟用dynamic routing学出来哪个效果更好
