@@ -80,7 +80,7 @@ CapsNet的结构是Image(input)->Conv1->PrimaryCaps->DigitCaps(output)->Reconstr
 
 **公式**
 
- $$\hat{u}_{j|i} = W_{ij}u_i \tag{1}$$
+ $$\hat{u}_{j|i} = W_{ij} u_i \tag{1}$$
 
 - $u_i(i \in [6 * 6 * 32])$： 表示PrimaryCaps的某个8D的Capsule
 - $\hat{u}_{j|i}$： 论文中称之为低一层的capsules的“prediction vectors”
