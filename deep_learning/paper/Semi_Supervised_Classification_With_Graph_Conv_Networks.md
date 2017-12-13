@@ -81,4 +81,28 @@ $$g_{{\theta}^{'}} \star x \approx \sum_{k=0}^{K} {\theta}_{k}^{'} T_k({\hat{L}}
 
 将(5)式叠加，并且“each layer followed by a point-wise non-linearity”， 就形成了基于图卷积的神经网络。现在令K=1，那么函数就变成了关于L的线性函数，即“a linear function on the graph Laplacian spectrum”。
 
-论文上直观地认为，不去明确限定Chebyshev polynomials的参数可以缓和对图上局部邻居结构的过拟合，这种图有着非常广的节点度分布。
+论文上直观地认为，不去明确限定Chebyshev polynomials的参数可以缓和对图上局部邻居结构的过拟合，这种图有着非常广的节点度分布。(这里省略了一部分内容)
+
+<br>
+
+在这种线性GCN下，近似 $\lambda_{max} \approx 2$，因为我们期望神经网络参数可以在训练中适应这种标量变化。在这种近似下，(5)式变为：
+
+$$g_{{\theta}^{'}} \star x \approx \theta_{0}^{'} x + \theta_{1}^{'} (L - I_N) x = \theta_{0}^{'} x - \theta_{1}^{'} D^{-\frac{1}{2}} A D^{-\frac{1}{2}} x \tag6$$
+
+- filter的参数 $\theta_{0}^{'}$ 和 $\theta_{1}^{'}$ 可以在整个graph中共享
+
+filter以这种形式应用相当于对某个节点的$k^{th}$-order neighborhood做了高效的卷积(k是filtering operation的数量，或者是神经网络模型conv层的数量)
+
+<br>
+
+在实践中，**限制参数** 的数量可以解决过拟合，并且最小化operation的数量，所以再如下进行简化：
+
+$$g_{{\theta}^{'}} \star x \approx \theta (I_N + D^{-\frac{1}{2}} A D^{-\frac{1}{2}}) x \tag7$$
+
+- $\theta = \theta_{0}^{'} = - \theta_{1}^{'}$
+
+问题是，重复这个operator会导致数值不稳定和梯度爆炸/消失，因此再用一个renormalization trick：$I_N + D^{-\frac{1}{2}} A D^{-\frac{1}{2}} \to \hat{D}^{-\frac{1}{2}} \hat{A} \hat{D}^{-\frac{1}{2}}$，即令$\hat{A} = A + I_N$，$\hat{D}_{ii} = \sum_j \hat{A}_{ij}$
+
+<br>
+
+之前说X是N×1的，我们可以一般化，使$X \in \mathbb{R}^{N \times C}$ C是input channels
