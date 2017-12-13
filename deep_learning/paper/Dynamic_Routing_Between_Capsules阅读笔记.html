@@ -9,7 +9,7 @@
         <script type="text/x-mathjax-config">
           MathJax.Hub.Config({"extensions":["tex2jax.js"],"jax":["input/TeX","output/HTML-CSS"],"messageStyle":"none","tex2jax":{"processEnvironments":false,"processEscapes":true,"inlineMath":[["$","$"],["\\(","\\)"]],"displayMath":[["$$","$$"],["\\[","\\]"]]},"TeX":{"extensions":["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js"]},"HTML-CSS":{"availableFonts":["TeX"]}});
         </script>
-        <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js"></script>
+        <script type="text/javascript" async src="file:////home/beta/.atom/packages/markdown-preview-enhanced/node_modules/@shd101wyy/mume/dependencies/mathjax/MathJax.js"></script>
         
       
       
@@ -220,34 +220,28 @@ code.language-yaml {
 <li><a href="#intro">Intro</a></li>
 <li><a href="#main">Main</a>
 <ul>
-<li><a href="#%E4%BD%95%E4%B8%BAcapsule">何为Capsule</a></li>
 <li><a href="#capsnet">CapsNet</a>
 <ul>
 <li><a href="#%E7%BB%93%E6%9E%84%E6%A6%82%E8%BF%B0">结构概述</a></li>
 <li><a href="#image-to-relu-conv1-to-primarycaps">image to ReLU Conv1 to PrimaryCaps</a></li>
 <li><a href="#primarycaps-to-digitcaps-dynamic-routing">PrimaryCaps to DigitCaps &amp; Dynamic Routing</a></li>
+<li><a href="#dynamic-routing%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">Dynamic Routing算法流程</a></li>
 <li><a href="#reconstruction">Reconstruction</a></li>
 <li><a href="#total-loss">Total loss</a></li>
-<li><a href="#dynamic-routing%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">Dynamic Routing算法流程</a></li>
 </ul>
 </li>
+<li><a href="#%E5%AE%9E%E9%AA%8C">实验</a></li>
 <li><a href="#capsnet%E4%B8%8Etradictional-neuron%E7%9A%84%E5%AF%B9%E6%AF%94">CapsNet与tradictional neuron的对比</a></li>
-<li><a href="#%E8%A7%81%E8%A7%A3">见解</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
 <li><a href="#%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</a></li>
 </ul>
 </li>
-<li><a href="#end">END</a></li>
-<li><a href="#%E8%8D%89%E7%A8%BF">草稿</a></li>
 </ul>
 <br>
 <h2 class="mume-header" id="intro">Intro</h2>
 
-<ul>
-<li>联系方式：wjy.f@qq.com</li>
-</ul>
 <p>由于涉及比较多的公式，而github不支持MathJax或者LaTeX，所以如果想获得更好的阅读体验请安装chrome插件<a href="https://chrome.google.com/webstore/detail/github-with-mathjax/ioemnmodlmafdkllaclgeombjnmnbima">GitHub with MathJax</a>，或者有更好的方法恳请告知。</p>
-<p>本文记录了阅读论文<a href="https://arxiv.org/pdf/1710.09829">《<em>Dynamic Routing Between Capsules</em>》</a>以及<a href="https://github.com/naturomics/CapsNet-Tensorflow">naturomics的代码</a>的理解与收获，若有错误欢迎指出。转载请注明出处。</p>
-<p>由于代码基本上都是按照文章思路来写的，所以为了不重复讲解，会在采取内容与代码一起讲解的形式。</p>
+<p>本文记录了阅读论文<a href="https://arxiv.org/pdf/1710.09829">《<em>Dynamic Routing Between Capsules</em>》</a>以及<a href="https://github.com/naturomics/CapsNet-Tensorflow">naturomics的代码</a>的理解与收获，若有错误欢迎指出（wjy.f@qq.com），转载请注明出处。</p>
 <p>若想通过视频快速了解，可以看看下面两个链接，讲得比较生动易理解（不过还是推荐读论文）：</p>
 <ul>
 <li><a href="https://www.bilibili.com/video/av16594836/?from=search&amp;seid=12945685157419672339">Capsule Networks教程(by Aurélie)</a></li>
@@ -256,11 +250,6 @@ code.language-yaml {
 <br>
 <h2 class="mume-header" id="main">Main</h2>
 
-<br>
-<h3 class="mume-header" id="%E4%BD%95%E4%B8%BAcapsule">何为Capsule</h3>
-
-<p>Hinton早在2011年已经提出了<code>Capsule</code></p>
-<br>
 <h3 class="mume-header" id="capsnet">CapsNet</h3>
 
 <br>
@@ -274,6 +263,8 @@ code.language-yaml {
 <p>下图是论文中所采用的神经网络结构：</p>
 <p><img src="./img/capsule_figure1.png" alt=""></p>
 <p>看完这幅图应该大概能理解CapsNet的结构。它先是对图像用了两次卷积得到PrimaryCaps，然后用<em>Routing-By-Agreement Mechanism</em>得到DigitCaps。最后，求DigitCaps中的10个向量的长度，比如说最长的是第4个向量，那么就意味着CapsNet识别出当前输入的图片是数字4。</p>
+<p>看到这里，何为<code>Capsule</code>？在PrimaryCaps中，它指的是长度为8的向量，共6<em>6</em>32个。而在DigitCaps中，它指的是16维的向量，共10个。所以Capsule其实对应着传统神经网络的scalar，只是一个scalar能够表征的信息太少了，所以将其扩展为向量，这样它就能够表示更多的信息。有人说，之所以提出这种想法是因为Hinton观察到人的大脑不是像神经网络一样严格分层，而是一簇簇神经元作为一个整体的。</p>
+<p>CapsNet的结构是Image(input)-&gt;Conv1-&gt;PrimaryCaps-&gt;DigitCaps(output)-&gt;Reconstruction，下文也会按照这个顺序来讲解</p>
 <p>在下文中，若 i 指<span class="mathjax-exps">$layer_l$</span>的某一个capsule ，那么 j 就是指<span class="mathjax-exps">$layer_{l+1}$</span>的某一个capsule。</p>
 <br>
 <h4 class="mume-header" id="image-to-relu-conv1-to-primarycaps">image to ReLU Conv1 to PrimaryCaps</h4>
@@ -281,13 +272,17 @@ code.language-yaml {
 <p>论文使用的是MNIST手写识别数据集，每张图片的大小都是28*28。</p>
 <p>流程：</p>
 <ol>
-<li>image(28 * 28)<br>
-<br></li>
-<li>img <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> Conv1(256 * 20 * 20)<br>
-<br></li>
-<li>Conv1 <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=2, padding=&quot;VALID&quot;) + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> PrimaryCaps(256 * 6 * 6)<br>
-这里可能会有人奇怪，这里不过是用了256个filter产生256个feature map，图片为什么会画成(32 * 8 * 6 * 6)的形式，这是因为后面的路由算法是将一个长度为8的向量当做一个整体来计算的。</li>
+<li>image(28 * 28)</li>
 </ol>
+<br>
+<ol start="2">
+<li>img <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> Conv1(256 * 20 * 20)</li>
+</ol>
+<br>
+<ol start="3">
+<li>Conv1 <span class="mathjax-exps">$&#x5C;to$</span> <code>Conv(num_outputs=256, kernel_size=9, stride=2, padding=&quot;VALID&quot;) + ReLU</code> <span class="mathjax-exps">$&#x5C;to$</span> PrimaryCaps(256 * 6 * 6)</li>
+</ol>
+<p>这里可能会有人奇怪，这里不过是用了256个filter产生256个feature map，图片为什么会画成(32 * 8 * 6 * 6)的形式，这是因为后面的路由算法是将一个长度为8的向量当做一个整体来计算的。</p>
 <br>
 <h4 class="mume-header" id="primarycaps-to-digitcaps-dynamic-routing">PrimaryCaps to DigitCaps &amp; Dynamic Routing</h4>
 
@@ -301,14 +296,14 @@ code.language-yaml {
 <p>下面介绍其公式意义：</p>
 <br>
 <p><strong>公式</strong></p>
-<p><div class="mathjax-exps">$$&#x5C;hat{u}_{j|i} = W_{ij}u_i &#x5C;tag{1}$$</div></p>
+<p><div class="mathjax-exps">$$&#x5C;hat{u}_{j|i} = W_{ij} u_i &#x5C;tag{1}$$</div></p>
 <ul>
-<li><span class="mathjax-exps">$u_i(i &#x5C;in [6*6*32])$</span>： 表示PrimaryCaps的某个8D的Capsule</li>
+<li><span class="mathjax-exps">$u_i(i &#x5C;in [6 * 6 * 32])$</span>： 表示PrimaryCaps的某个8D的Capsule</li>
 <li><span class="mathjax-exps">$&#x5C;hat{u}_{j|i}$</span>： 论文中称之为低一层的capsules的“prediction vectors”</li>
 </ul>
 <p><div class="mathjax-exps">$$c_{ij} = &#x5C;frac{exp(b_{ij})}{&#x5C;sum_kexp(b_{ik})} &#x5C;tag{2}$$</div></p>
 <ul>
-<li><span class="mathjax-exps">$b_{ij}$</span>： 初始化为0，更新方法是 <span class="mathjax-exps">$b_{ij} &#x5C;leftarrow b_{ij} + &#x5C;hat{u}_{j|i} &#x5C;cdot v_j$</span>。 其中，<span class="mathjax-exps">$a_{ij} = &#x5C;hat{u}_{j|i} &#x5C;cdot v_j$</span> 表示 <span class="mathjax-exps">$capsule_j$</span>（即<span class="mathjax-exps">$v_j$</span>）跟 <span class="mathjax-exps">$capsule_i$</span> 的prediction vector（即<span class="mathjax-exps">$&#x5C;hat{u}_{j|i}$</span>）的agreement（契合度）。<strong>值越大，表示两个向量的方向越相似，两个向量所表示的性质越相近</strong>。由<span class="mathjax-exps">$c_{ij}$</span>的公式知，<span class="mathjax-exps">$b_{ij}$</span> 的值越大（意味着两个向量的方向越相似），<span class="mathjax-exps">$c_{ij}$</span>的值越大，<strong><span class="mathjax-exps">$capsule_i$</span> 越倾向于将信息传送给 <span class="mathjax-exps">$capsule_j$</span></strong> 。</li>
+<li><span class="mathjax-exps">$b_{ij}$</span>： 初始化为0，更新方法是 <span class="mathjax-exps">$b_{ij} &#x5C;leftarrow b_{ij} + &#x5C;hat{u}_{j|i} v_j$</span>。 其中<span class="mathjax-exps">$a_{ij} = &#x5C;hat{u}_{j|i} v_j$</span>表示<span class="mathjax-exps">$capsule_j$</span>（即<span class="mathjax-exps">$v_j$</span>）跟<span class="mathjax-exps">$capsule_i$</span>的prediction vector（即<span class="mathjax-exps">$&#x5C;hat{u}_{j|i}$</span>）的agreement（契合度）。<strong>值越大，表示两个向量的方向越相似，两个向量所表示的性质越相近</strong>。由<span class="mathjax-exps">$c_{ij}$</span>的公式知，<span class="mathjax-exps">$b_{ij}$</span> 的值越大（意味着两个向量的方向越相似），<span class="mathjax-exps">$c_{ij}$</span>的值越大，<strong><span class="mathjax-exps">$capsule_i$</span> 越倾向于将信息传送给 <span class="mathjax-exps">$capsule_j$</span></strong> 。</li>
 <li><span class="mathjax-exps">$c_{ij}$</span>： 由动态路由算法更新的coupling coefficients，并且<span class="mathjax-exps">$&#x5C;sum_{i}c_{ij} = 1$</span>（此时<span class="mathjax-exps">$j$</span>为某确定的常数）</li>
 </ul>
 <p><div class="mathjax-exps">$$s_j = &#x5C;sum_{i}c_{ij}&#x5C;hat{u}_{j|i} &#x5C;tag{3}$$</div></p>
@@ -320,6 +315,15 @@ code.language-yaml {
 <li><span class="mathjax-exps">$squash()$</span>： 非线性函数，保留了向量的方向，使长的向量越长，短的向量越短，并且长度都压缩在0-1之内</li>
 <li><span class="mathjax-exps">$v_j$</span>： 由dynamic routing计算出来的PrimaryCaps的output。在文章中就是指最后的输出DigitCaps，共有10个（因为有10个数字，即10类）Capsule。每个capsule有16维，每一维都代表着数字的某些属性（粗细、倾斜程度等等）。<strong>向量的长度代表了当前输入是类 <span class="mathjax-exps">$j$</span> 的概率</strong>。</li>
 </ul>
+<br>
+<h4 class="mume-header" id="dynamic-routing%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">Dynamic Routing算法流程</h4>
+
+<br>
+<p><img src="./img/procedure1.png" alt=""></p>
+<br>
+<p>整个过程如下所示（图片来自<a href="https://github.com/naturomics/">naturomics</a>的ppt）：</p>
+<br>
+<p><img src="./img/capsule_routingbyagreement.png" alt=""></p>
 <br>
 <h4 class="mume-header" id="reconstruction">Reconstruction</h4>
 
@@ -403,36 +407,46 @@ reconstruction_loss <span class="token operator">=</span> mean<span class="token
 <p>最后：</p>
 <p><div class="mathjax-exps">$$TotalLoss = MarginLoss + ReconstructionLoss$$</div></p>
 <br>
-<h4 class="mume-header" id="dynamic-routing%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">Dynamic Routing算法流程</h4>
+<h3 class="mume-header" id="%E5%AE%9E%E9%AA%8C">实验</h3>
 
-<br>
-<p><img src="./img/procedure1.png" alt=""></p>
-<br>
-<p>整个过程如下所示（图片来自<a href="https://github.com/naturomics/">naturomics</a>的ppt）：</p>
-<br>
-<p><img src="./img/capsule_routingbyagreement.png" alt=""></p>
+<p><strong>MNIST</strong></p>
+<p>l=label, p=prediction, r=reconstruction。下面最右的两列展示了模式是如何在5和3之间纠结的。而其它列表明了模型不仅保留了图片的细节并且平滑了噪声。</p>
+<p><img src="./img/capsule_ex2.jpg" alt=""></p>
+<p><img src="./img/capsule_ex1.jpg" alt=""></p>
+<p><strong>Dimension perturbations</strong></p>
+<p>改变DigitCaps中的capsule的16维中的一维，这个被改变的capsule所重构出来的图像也会有所变化（比如笔画变得更粗）。这表明了capsule学习到了entity，并且每一维都代表着entity的某个feature，具有很强的解释性。</p>
+<p><img src="./img/capsule_ex3.jpg" alt=""></p>
+<p><strong>MultiMNIST</strong></p>
+<p>L指的是两个label，R指的是两个用于重构的图像。上面白色的是input image，下面红绿色重叠的是重构的图像。</p>
+<p>如下图所示，实验把两个激活程度最高的capsule对应的数字作为识别结果，据此对识别到的图像元素进行了重构。对于左边中识别正确的样本（L指真实标签，R指激活程度最高的两个胶囊对应的标签），可以看到由于不同的capsule各自工作，在一个识别结果中用到的特征并不会影响到另一个识别结果，不受重叠的影响（或者说重叠部分的特征可以复用）。</p>
+<p>另一方面，每个capsule还是需要足够多的周边信息支持，而不是一味地认为重叠部分的特征就需要复用。下图中间是选了一个高激活程度的capsule和一个低激活程度capsule的结果（* R表示其中一个数字既不是真实标签也不是识别结果，L仍然为真实标签）。可以看到，在（5，0）图中，关注“7”的capsule并没有找到足够多的“7”的特征，所以激活很弱；（1，8）图中也是因为没有“0”的支持特征，所以重叠的部分也没有在“0”的capsule中用第二次。</p>
+<p>最右R:P:(2, 7)指的是预测结果是2,7，然后将代表2和7的capsule重构。</p>
+<p><img src="./img/capsule_multiMNIST.png" alt=""></p>
 <br>
 <h3 class="mume-header" id="capsnet%E4%B8%8Etradictional-neuron%E7%9A%84%E5%AF%B9%E6%AF%94">CapsNet与tradictional neuron的对比</h3>
 
 <p>（图片来自<a href="https://github.com/naturomics/CapsNet-Tensorflow">naturomics</a>）：</p>
-<p><img src="https://github.com/naturomics/CapsNet-Tensorflow/raw/master/imgs/capsuleVSneuron.png" alt=""></p>
-<pre class="language-">&#x8FD9;&#x91CC;&#x5199;&#x80CC;&#x666F;&#xFF08;&#x4E3A;&#x4EC0;&#x4E48;&#x8981;&#x8FD9;&#x4E48;&#x6784;&#x9020;&#x6A21;&#x578B;&#xFF0C;&#x80CC;&#x540E;&#x7684;&#x795E;&#x7ECF;&#x79D1;&#x5B66;&#x77E5;&#x8BC6;)
-</pre>
+<p><img src="./img/capsule_diff.png" alt=""></p>
 <br>
-<h3 class="mume-header" id="%E8%A7%81%E8%A7%A3">见解</h3>
+<h3 class="mume-header" id="%E6%80%BB%E7%BB%93">总结</h3>
 
+<p><strong>为什么要用Routing-by-agreement？</strong></p>
+<p>传统的CNN里面，conv后面是max-pooling层，但是max-pooling只保留了唯一一个最活跃的特征，而Routing则有效得多。</p>
 <p>Routing-by-agreement有以下几个好处：</p>
 <ul>
 <li>由于上一层的capsule会逐渐倾向于将信息传到下一层与它相似的capsule，这样就能够给下一层capsule干净清晰的信号，减少噪声，从而更快地学习到entity</li>
 <li>通过追溯当前被激活的capsule的信号传输路径，我们可以操控part-whole中的part，并且清楚知道哪一个part属于哪一个entity（比如说识别一个由三角形和长方形组成的房屋，在<span class="mathjax-exps">$layer l$</span>可能有个capsule是检测三角形，有个capsule检测长方形，则在<span class="mathjax-exps">$layer l+1$</span>有能够得到检测房屋的capsule。此为ppart-whole的关系）。</li>
 <li>可以很容易地解析重叠的entity，比如重叠的数字识别。</li>
 </ul>
+<blockquote>
 <p>the capsules in the first layer try to predict what the second layer capsules will output</p>
+</blockquote>
 <br>
 <h3 class="mume-header" id="%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</h3>
 
 <p><a href="https://github.com/naturomics/CapsNet-Tensorflow">代码link</a></p>
-<p>目录</p>
+<p>由于代码基本上都是按照文章思路来写的，所以不重复讲，而是介绍主要的结构。</p>
+<p><strong>目录</strong></p>
 <pre class="language-">CapsNet-Tensorflow
   - capsLayer.py
       &#x5B9A;&#x4E49;&#x4E86;capsLayer&#x7684;&#x5B9E;&#x73B0;&#x65B9;&#x6CD5;&#x3002;
@@ -586,185 +600,28 @@ reconstruction_loss <span class="token operator">=</span> mean<span class="token
         self<span class="token punctuation">.</span>total_loss <span class="token operator">=</span> self<span class="token punctuation">.</span>margin_loss <span class="token operator">+</span> cfg<span class="token punctuation">.</span>regularization_scale <span class="token operator">*</span> self<span class="token punctuation">.</span>reconstruction_err
 
 </pre>
-<br>
-<h2 class="mume-header" id="end">END</h2>
-
-<br>
-<hr>
-<h2 class="mume-header" id="%E8%8D%89%E7%A8%BF">草稿</h2>
-
-<ul>
-<li>
-<p>32个PrimaryCaps用的是同一个conv吗？</p>
-</li>
-<li>
-<p>CapsNet与普通神经网络的区别</p>
-</li>
-<li>
-<p>动态路由算法</p>
-</li>
-<li>
-<p>实体在模型中是否会有所表现</p>
-</li>
-<li>
-<p>解释为什么长度能表示存在的概率，方向为什么表示性质</p>
-</li>
-<li>
-<p>搞清楚PrimaryCaps到底用了多少个conv</p>
-</li>
-</ul>
-<p>Now that we know that the rectangle and triangle are part of a boat, the outputs of the rectangle capsule and triangle capsule really concern only the boat capsule, there's no need to send these outputs to any other capsule, this would just add noise. They should send only to the boat capsule.<br>
-This is called routing by agreement.Benefits:1. 由于caposule的output只routed to下一层相似的capsule，这就能够给下一层capsule一个干净清晰的信号，从而能够更好的学习到实体。2. 通过追溯被激活的capsule的信号传输路径，我们就可以很容易地操控part-whole中的part，和清楚地知道哪一个part属于哪一个object。3. routing-by-agreement可以很容易地解析重叠的object</p>
-<br>
-<ul>
-<li>CONV1_LAYER<br></li>
-</ul>
-<blockquote>
-<p>conv1 = tf.contrib.layers.conv2d(self.X,num_outputs=256, kernel_size=9, stride=1, padding='VALID')</p>
-</blockquote>
-<br>
-<ul>
-<li>PRIMARYCAPS_LAYER<br></li>
-</ul>
-<blockquote>
-<p>primaryCaps = CapsLayer(num_outputs=32, vec_len=8, with_routing=False, layer_type='CONV')<br>
-caps1 = primaryCaps(conv1, kernel_size=9, stride=2)</p>
-</blockquote>
-<p>在CapsLayer的实现的CONV中，使得输出为“self.num_outputs * self.vec_len”，问题是，这个设定是否意味着有num_outputs*vec_len个filter？</p>
-<p>是的。</p>
-<br>
-<ul>
-<li>DIGITCAPS_LAYER<br></li>
-</ul>
-<br>
-<ul>
-<li>def squash(vector)</li>
-</ul>
-<p>计算过程：</p>
-<pre class="language-"># &#x5C06;vector^2&#x540E;&#xFF0C;&#x518D;&#x5C06;&#x5012;&#x6570;&#x7B2C;&#x4E8C;&#x7EF4;&#x5168;&#x90E8;&#x52A0;&#x8D77;&#x6765;
-vec_squared_norm = tf.reduce_sum(tf.square(vector), -2, keep_dims=True)
-</pre>
-<p><div class="mathjax-exps">$$scalar = &#x5C;frac{vecsqnorm}{(1+vecsqnorm)&#x5C;sqrt{vecsqnorm+epsilon}}$$</div></p>
-<p>跟论文的公式一样</p>
-<br>
-<ul>
-<li>def routing(input, b_IJ)</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>Variable</th>
-<th>shape</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>input</td>
-<td>(128, 1152, 1, 8, 1) to (128, 1152, 10, 8, 1)</td>
-</tr>
-<tr>
-<td>W</td>
-<td>(1, 1152, 10, 8, 16)</td>
-</tr>
-<tr>
-<td>b_IJ</td>
-<td>(128, 1152, 10, 1, 1)</td>
-</tr>
-</tbody>
-</table>
-<p>函数的思路如下所示</p>
-<pre class="language-python"><span class="token comment" spellcheck="true"># 难道这个令人窒息的操作是传说中的权重共享？</span>
-W <span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span>
-<span class="token operator">-</span><span class="token operator">-</span><span class="token operator">-</span>tile<span class="token operator">-</span><span class="token operator">-</span><span class="token operator">-</span><span class="token operator">></span>
-W <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">)</span>
-
-input <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-<span class="token operator">-</span><span class="token operator">-</span><span class="token operator">-</span>tile<span class="token operator">-</span><span class="token operator">-</span><span class="token operator">-</span><span class="token operator">></span>
-input <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">8</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-
-u_hat <span class="token operator">=</span> matmul<span class="token punctuation">(</span>W<span class="token punctuation">,</span> input<span class="token punctuation">)</span>    <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-u_hat_stopped               <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-
-<span class="token keyword">for</span> r_iter <span class="token keyword">in</span> range<span class="token punctuation">(</span>迭代次数<span class="token punctuation">)</span><span class="token punctuation">:</span>
-  <span class="token comment" spellcheck="true"># b_IJ (128, 1152, 10, 1, 1)</span>
-  <span class="token comment" spellcheck="true"># 对b_IJ的第三维做softmax</span>
-  c_IJ <span class="token operator">=</span> softmax<span class="token punctuation">(</span>b_IJ<span class="token punctuation">,</span> dim<span class="token operator">=</span><span class="token number">2</span><span class="token punctuation">)</span>   <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-
-  <span class="token keyword">if</span> 最后一次迭代：
-    s_J <span class="token operator">=</span> c_IJ <span class="token operator">*</span> u_hat          <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-    reducesum<span class="token punctuation">(</span>s_J<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>      <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-    v_J <span class="token operator">=</span> squash<span class="token punctuation">(</span>s_J<span class="token punctuation">)</span>
-
-  <span class="token keyword">if</span> 不是最后一次迭代（这部分和Procedure1的第<span class="token number">7</span>步一样）：
-    s_J <span class="token operator">=</span> c_IJ <span class="token operator">*</span> u_hat_stopped  <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-    reduce_sum<span class="token punctuation">(</span>s_J<span class="token punctuation">,</span> axis<span class="token operator">=</span><span class="token number">1</span><span class="token punctuation">)</span>     <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-    v_J <span class="token operator">=</span> squash<span class="token punctuation">(</span>s_J<span class="token punctuation">)</span>
-    v_J_tiled <span class="token operator">=</span> tf<span class="token punctuation">.</span>tile<span class="token punctuation">(</span>v_J<span class="token punctuation">,</span> <span class="token punctuation">[</span><span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">)</span>     <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">16</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-    u_produce_v <span class="token operator">=</span> u_hat_stopped_T <span class="token operator">*</span> v_J_tiled        <span class="token punctuation">(</span><span class="token number">128</span><span class="token punctuation">,</span> <span class="token number">1152</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">,</span> <span class="token number">1</span><span class="token punctuation">)</span>
-    b_IJ <span class="token operator">+=</span> u_produce_v
-
-
-</pre>
-<br>
-<ul>
-<li>Masking</li>
-</ul>
-<p>设DigitCaps的输出结果为x，batchsize=128，则Masking所做的是：</p>
-<p>将这部分是要用ground truth的onehot vector与DigitCaps的输出做element-wise multiply(mask)，得到masked_v(128, 10, 16)，然后求DigitCaps的输出向量的长度，得到v_length(128, 10, 1, 1)</p>
-<br>
-<ul>
-<li>Decoder</li>
-</ul>
-<p>这里将Masking得到的masked_v拉成一维向量(128, 160)，放入fc1层(nun_outputs=512)，得到的结果再放入fc2(num_outputs=1024)，得到的结果再放入fc3(nun_outputs=784, activation_fn=sigmoid)，最后得到decoded，这个decoded就可以reshape一下得到重构的图像。</p>
-<br>
-<p><strong>def loss</strong></p>
-<ul>
-<li>margin_loss</li>
-</ul>
-<p><img src="./img/cap_lossfunc.png" alt=""></p>
-<ul>
-<li>reconstruction loss</li>
-</ul>
-<p>将x(128, 28, 28, 1)reshape成orgin(128, 784)<br>
-squared = tf.square(self.decoded - orgin)<br>
-self.reconstruction_err = tf.reduce_mean(squared)</p>
-<ul>
-<li>总的loss</li>
-</ul>
-<p>total_loss = margin_loss + reconstruction_err * cfg.regularization_scale</p>
-<br>
-<p><strong>main</strong></p>
-<p>num_batch = 468<br>
-num_test_batch = 78</p>
-<p><strong>李宏毅 capsule</strong></p>
-<ul>
-<li>CapsNet最后学习出来的capsule是“i know the difference, but i don't react to it”</li>
-<li>dynamic routing work不work，需要做一个实验，就是看c用backpropagation学出来跟用dynamic routing学出来哪个效果更好</li>
-</ul>
 
       </div>
       <div class="md-sidebar-toc"><ul>
 <li><a href="#intro">Intro</a></li>
 <li><a href="#main">Main</a>
 <ul>
-<li><a href="#%E4%BD%95%E4%B8%BAcapsule">何为Capsule</a></li>
 <li><a href="#capsnet">CapsNet</a>
 <ul>
 <li><a href="#%E7%BB%93%E6%9E%84%E6%A6%82%E8%BF%B0">结构概述</a></li>
 <li><a href="#image-to-relu-conv1-to-primarycaps">image to ReLU Conv1 to PrimaryCaps</a></li>
 <li><a href="#primarycaps-to-digitcaps-dynamic-routing">PrimaryCaps to DigitCaps &amp; Dynamic Routing</a></li>
+<li><a href="#dynamic-routing%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">Dynamic Routing算法流程</a></li>
 <li><a href="#reconstruction">Reconstruction</a></li>
 <li><a href="#total-loss">Total loss</a></li>
-<li><a href="#dynamic-routing%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B">Dynamic Routing算法流程</a></li>
 </ul>
 </li>
+<li><a href="#%E5%AE%9E%E9%AA%8C">实验</a></li>
 <li><a href="#capsnet%E4%B8%8Etradictional-neuron%E7%9A%84%E5%AF%B9%E6%AF%94">CapsNet与tradictional neuron的对比</a></li>
-<li><a href="#%E8%A7%81%E8%A7%A3">见解</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
 <li><a href="#%E4%BB%A3%E7%A0%81%E9%98%85%E8%AF%BB">代码阅读</a></li>
 </ul>
 </li>
-<li><a href="#end">END</a></li>
-<li><a href="#%E8%8D%89%E7%A8%BF">草稿</a></li>
 </ul>
 </div>
       <a id="sidebar-toc-btn">≡</a>
