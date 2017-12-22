@@ -19,8 +19,6 @@
 
 ### CapsNet
 
-<br>
-
 #### 结构概述
 
 论文仅仅是提出了一个可行的方案，目的是为了证明`Capsule`这个思想的可行性，目前还较为粗略，有很多改进空间。论文有两个比较突出的创新点：
@@ -30,7 +28,7 @@
 
 下图是论文中所采用的神经网络结构：
 
-![](./img/capsule_figure1.png)
+![](./images/capsule_figure1.png)
 
 看完这幅图应该大概能理解CapsNet的结构。它先是对图像用了两次卷积得到PrimaryCaps，然后用*Routing-By-Agreement Mechanism*得到DigitCaps。最后，求DigitCaps中的10个向量的长度，比如说最长的是第4个向量，那么就意味着CapsNet识别出当前输入的图片是数字4。
 
@@ -38,7 +36,7 @@
 
 CapsNet的结构是Image(input)->Conv1->PrimaryCaps->DigitCaps(output)->Reconstruction，下文也会按照这个顺序来讲解
 
-在下文中，若 i 指$layer_l$的某一个capsule ，那么 j 就是指$layer_{l+1}$的某一个capsule。
+在下文中，若 i 指 $layer_l$ 的某一个capsule ，那么 j 就是指 $layer_{l+1}$ 的某一个capsule。
 
 <br>
 
@@ -50,11 +48,7 @@ CapsNet的结构是Image(input)->Conv1->PrimaryCaps->DigitCaps(output)->Reconstr
 
 1. image(28 * 28)
 
-<br>
-
-2. img $\to$ `Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU` $\to$ Conv1(256 * 20 * 20)
-
-<br>
+2. images $\to$ `Conv(num_outputs=256, kernel_size=9, stride=1, padding='VALID') + ReLU` $\to$ Conv1(256 * 20 * 20)
 
 3. Conv1 $\to$ `Conv(num_outputs=256, kernel_size=9, stride=2, padding="VALID") + ReLU` $\to$ PrimaryCaps(256 * 6 * 6)
 
@@ -70,27 +64,23 @@ CapsNet的结构是Image(input)->Conv1->PrimaryCaps->DigitCaps(output)->Reconstr
 
 <br>
 
-![](./img/capsule_routing.png)
+![](./images/capsule_routing.png)
 
 注意，图片中仅展示了一个$v_j,j\in(1,10)$的求解过程，其他$v_j$同理可得。
-
-下面介绍其公式意义：
-
-<br>
 
 **公式**
 
  $$\hat{u}_{j|i} = W_{ij} u_i \tag{1}$$
 
-- $u_i(i \in [6 * 6 * 32])$： 表示PrimaryCaps的某个8D的Capsule
+- $u_i (i \in [6 * 6 * 32])$： 表示PrimaryCaps的某个8D的Capsule
 - $\hat{u}_{j|i}$： 论文中称之为低一层的capsules的“prediction vectors”
 
-$$c_{ij} = \frac{exp(b_{ij})}{\sum_kexp(b_{ik})} \tag{2}$$
+$$c_{ij} = \frac{exp( b_{ij} )}{\sum_{k} exp( b_{ik} )} \tag{2}$$
 
-- $b_{ij}$： 初始化为0，更新方法是 $b_{ij} \leftarrow b_{ij} + \hat{u}_{j|i} v_j$。 其中$a_{ij} = \hat{u}_{j|i} v_j$表示$capsule_j$（即$v_j$）跟$capsule_i$的prediction vector（即$\hat{u}_{j|i}$）的agreement（契合度）。**值越大，表示两个向量的方向越相似，两个向量所表示的性质越相近**。由$c_{ij}$的公式知，$b_{ij}$ 的值越大（意味着两个向量的方向越相似），$c_{ij}$的值越大，**$capsule_i$ 越倾向于将信息传送给 $capsule_j$** 。
-- $c_{ij}$： 由动态路由算法更新的coupling coefficients，并且$\sum_{i}c_{ij} = 1$（此时$j$为某确定的常数）
+- $b_{ij}$： 初始化为0，更新方法是 $b_{ij} \leftarrow b_{ij} + \hat{u}_{j|i} v_j$。 其中 $a_{ij} = \hat{u}_{j|i} v_j$ 表示 $capsule_j$（即 $v_j$ ）跟 $capsule_i$的prediction vector（即 $\hat{u}_{j|i}$ ）的agreement（契合度）。**值越大，表示两个向量的方向越相似，两个向量所表示的性质越相近**。由 $c_{ij}$ 的公式知，$b_{ij}$ 的值越大（意味着两个向量的方向越相似），$c_{ij}$ 的值越大，**$capsule_i$ 越倾向于将信息传送给 $capsule_j$** 。
+- $c_{ij}$： 由动态路由算法更新的coupling coefficients，并且 $\sum_{i} c_{ij} = 1$（此时 $j$ 为某确定的常数）
 
-$$s_j = \sum_{i}c_{ij}\hat{u}_{j|i} \tag{3}$$
+$$s_j = \sum_{i} c_{ij} \hat{u}_{j|i} \tag{3}$$
 
 - $s_j$： $capsule_j$ 的所有input之和。
 
@@ -105,15 +95,11 @@ $$squash(s_j):v_j = \frac{\|s_j\|^2}{1+\|s_j\|^2}\frac{s_j}{\|s_j\|} \tag{4}$$
 
 <br>
 
-![](./img/procedure1.png)
-
-<br>
+![](./images/procedure1.png)
 
 整个过程如下所示（图片来自[naturomics](https://github.com/naturomics/)的ppt）：
 
-<br>
-
-![](./img/capsule_routingbyagreement.png)
+![](./images/capsule_routingbyagreement.png)
 
 <br>
 
@@ -121,7 +107,7 @@ $$squash(s_j):v_j = \frac{\|s_j\|^2}{1+\|s_j\|^2}\frac{s_j}{\|s_j\|} \tag{4}$$
 
 CapsNet使用Reconstruction作为Regularization。其做法是将DigitCaps的十个输出向量$v_j$中长度最长的向量，经过3个FC层（结构如下图所示）重构出原来的图像，通过对比重构的图像和原图像的差异(pixel-wise)，得到reconstruction loss。用来重构的这三个FC层一起称为`Decoder`。
 
-![](./img/capsule_decoder.png)
+![](./images/capsule_decoder.png)
 
 <br>
 
@@ -131,7 +117,7 @@ CapsNet使用Reconstruction作为Regularization。其做法是将DigitCaps的十
 
 **Margin loss**
 
-![](./img/cap_lossfunc.png)
+![](./images/cap_lossfunc.png)
 
 - k： class k，$k\in[1, 10]$
 - $m^+=0.9, m^-=0.1$ （自己设定）
@@ -164,12 +150,9 @@ reconstruction_loss = mean(squared)
 
 $$Reconstruction Loss=\frac{1}{784} * \sum_{i=1}^{784}(decoded_i - orgin_i)^2$$
 
-<br>
-
 最后：
 
 $$TotalLoss = MarginLoss + ReconstructionLoss$$
-
 
 <br>
 
@@ -179,15 +162,15 @@ $$TotalLoss = MarginLoss + ReconstructionLoss$$
 
 l=label, p=prediction, r=reconstruction。下面最右的两列展示了模式是如何在5和3之间纠结的。而其它列表明了模型不仅保留了图片的细节并且平滑了噪声。
 
-![](./img/capsule_ex2.jpg)
+![](./images/capsule_ex2.jpg)
 
-![](./img/capsule_ex1.jpg)
+![](./images/capsule_ex1.jpg)
 
 **Dimension perturbations**
 
 改变DigitCaps中的capsule的16维中的一维，这个被改变的capsule所重构出来的图像也会有所变化（比如笔画变得更粗）。这表明了capsule学习到了entity，并且每一维都代表着entity的某个feature，具有很强的解释性。
 
-![](./img/capsule_ex3.jpg)
+![](./images/capsule_ex3.jpg)
 
 **MultiMNIST**
 
@@ -199,7 +182,7 @@ L指的是两个label，R指的是两个用于重构的图像。上面白色的�
 
 最右R:P:(2, 7)指的是预测结果是2,7，然后将代表2和7的capsule重构。
 
-![](./img/capsule_multiMNIST.png)
+![](./images/capsule_multiMNIST.png)
 
 <br>
 
@@ -207,7 +190,7 @@ L指的是两个label，R指的是两个用于重构的图像。上面白色的�
 
 （图片来自[naturomics](https://github.com/naturomics/CapsNet-Tensorflow)）：
 
-![](./img/capsule_diff.png)
+![](./images/capsule_diff.png)
 
 <br>
 

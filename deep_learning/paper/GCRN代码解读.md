@@ -60,11 +60,11 @@ p i e r r e _ < u n k > _ N _ y e a r s _ o l d _ w i l l _ j o i n _ t h e _ b 
 
 **2. 构造邻接矩阵**
 
-![](./img/adj.png)
+![](./images/adj.png)
 
 得到邻接矩阵的值：
 
-![](./img/adj_value.png)
+![](./images/adj_value.png)
 
 
 ### GCRN实现思路：
@@ -73,9 +73,9 @@ GCRN = GCN + RNN。
 
 *公式*：
 
-![](./img/gconv.png)
+![](./images/gconv.png)
 
-![](./img/lstm_func.png)
+![](./images/lstm_func.png)
 
 
 **但是** 代码中的实现方式稍有不同
@@ -92,13 +92,13 @@ $$T_k(x) = 2LT_{k-1}(x)-T_{k-2}(x)$$
 
 **LSTM** ：
 
-![](./img/gcn_lstm.png)
+![](./images/gcn_lstm.png)
 
 ### 开始训练
 
 数据预处理 -> model定义 -> train
 
-![](./img/dataflow.png)
+![](./images/dataflow.png)
 
 输出```ouput```的shape为(batch_size, num_node, num_unit) —— (20, 50, 50)。由于设置了有50个LSTM units，所以这里需要使所有units的输出做线性变换，使其变为一个值：
 
@@ -284,7 +284,7 @@ def __call__(self, inputs, state, scope=None):
 
 
 
-![](./img/laplacian_example.png)
+![](./images/laplacian_example.png)
 
 **Properties**
 
