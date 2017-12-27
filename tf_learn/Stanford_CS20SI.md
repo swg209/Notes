@@ -24,3 +24,9 @@
 * Linear and Logistic Regression
 * Tensorflow's Optimizers
 * Example: OCR task on MNIST dataset
+
+## Lecture 4
+
+* [node4.pdf](http://web.stanford.edu/class/cs20si/lectures/notes_04.pdf)
+
+* 本节主要是讲解如何用tensorflow构造你的模型，以word2vec为例
