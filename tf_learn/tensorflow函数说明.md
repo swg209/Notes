@@ -256,21 +256,63 @@ tf.reduce_mean(x, 1)  # [1.,  2.]
 
 <br>
 
-****
+**tf.floor() & tf.ceil()**
+
+向下&上取整
 
 *例子*
+
+```python
+tf.floor(3.6) => 3
+tf.ceil(3.6) => 4
+```
 
 <br>
 
-****
+**tf.cast()**
+
+转换数据类型
 
 *例子*
+
+```python
+tensor `a` is [1.8, 2.2], dtype=tf.float
+tf.cast(a, tf.int32) ==> [1, 2]  # dtype=tf.int32
+```
 
 <br>
 
-****
+**tf.sparse_retain()**
+
+可以用来做mask，会将稀疏矩阵的一些值X掉
 
 *例子*
+
+```python
+def sparse_retain(sp_input, to_retain)
+
+For example, if `sp_input` has shape `[4, 5]` and 4 non-empty string values:
+
+      [0, 1]: a
+      [0, 3]: b
+      [2, 0]: c
+      [3, 1]: d
+
+  and `to_retain = [True, False, False, True]`, then the output will
+  be a `SparseTensor` of shape `[4, 5]` with 2 non-empty values:
+
+      [0, 1]: a
+      [3, 1]: d
+```
+
+<br>
+
+**tf.add_n()**
+
+还以为有什么特别的...是一个element\-wised的相加
+
+对应位置相加
+
 
 <br>
 
