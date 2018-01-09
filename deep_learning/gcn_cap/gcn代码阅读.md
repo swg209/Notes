@@ -106,18 +106,41 @@ mask
 
 **class GCN(Model)**
 
-- \_\_init\_\_
-  - input
-  - input_dim
-  - output_dim
-  - placeholders
-  - optimizer
-  - build(这里用到了**以名字命名的scope**，要注意)
-    - \_build()
-      - layers.append(GraphConvolution())
-      - layers.append(GraphConvolution())
+\_\_init\_\_()
 
+- input
+- input_dim
+- output_dim
+- placeholders
+- optimizer
+- build(这里用到了**以名字命名的scope**，要注意)
+  - \_build()
+    - layers.append(GraphConvolution())
+    - layers.append(GraphConvolution())
 
+\_loss()
+
+这里的loss不算直观，记录一下
+
+```python
+def masked_softmax_cross_entropy(preds, labels, mask):
+    """Softmax cross-entropy loss with masking."""
+    loss = tf.nn.softmax_cross_entropy_with_logits(logits=preds, labels=labels)
+    mask = tf.cast(mask, dtype=tf.float32)
+    mask /= tf.reduce_mean(mask)
+    loss *= mask
+    return tf.reduce_mean(loss)
+```
+
+先是element-wise的cross-entropy(preds, labels)
+
+将mask的true&false转换为数值
+
+$mask = \frac{mask}{\sum_{i}{mask_i}}$
+
+$loss = loss * mask$
+
+loss = reduce_sum(loss)
 
 ---
 
