@@ -5,13 +5,19 @@
 #   所以不要当真！有bug请反馈！
 
 ################ utils #####################
-function random(){
-  # 生成随机数
-  min=$1
-  max=$2-$1
-  num=$(date +%s)
-  ((num=(num%max+min)))
-  echo $num
+# function random(){
+#   # 生成随机数
+#   min=$1
+#   max=$2-$1
+#   num=$(date +%s)
+#   ((num=(num%max+min)))
+#   echo $num
+# }
+
+function random() {
+  input=$1
+  ((num=(${RANDOM}%input)))
+  return $num
 }
 
 function abs(){
@@ -102,6 +108,7 @@ e_start=($(__readINI conf.ini $mode evening_start))
 e_end=($(__readINI conf.ini $mode evening_end))
 sleep_time=($(__readINI conf.ini Mode sleep_time))
 move_pix=($(__readINI conf.ini Mode move_pix))
+rand=($(__readINI conf.ini Mode rand))
 
 #echo "$m_start, $m_end, $a_start, $a_end, $e_start, $e_end, $sleep_time"
 
