@@ -1,8 +1,10 @@
-## 2.2 评估方法
+[toc]
+
+# 2.2 评估方法
 
 评估前，首先是划分数据集(train, val, test)
 
-### 划分数据集
+## 划分数据集
 
 划分数据及的时候涉及到如何**sampling(采样)** ，这个问题有许多策略
 
@@ -15,9 +17,9 @@
 - training data多，testing data少，testing data的分布可能就会与总分布不一致，导致test的结果不好
 - training data少，testing data多，training data的分布可能就会与总分布不一致，model就会学得不好
 
-### 验证法
+## 验证法
 
-#### cross validation(交叉验证)
+### cross validation(交叉验证)
 
 K-flod cross validation(k折交叉验证)：将数据集D划分为k个等大小的互斥子集，每次取k-1个子集训练，剩下的1个做测试集；共训练k次，每个子集都当一回测试集。最后将k个结果去均值作为输出。**但是还没完！**，因为同一个数据集有多种划分子集的方式，所以需要用不同的划分方式做多次k-flod cv，比如常见有**10次10-flod cv**，然后将10次10-flod结果取均值，这才是最终输出。
 
@@ -30,7 +32,7 @@ Leve-One-Out(留一法)：与k-flod一样，只不过这个方法的将一条数
 - 缺点：数据量大的时候开销非常大
 
 
-#### Bootstrap(自助法)
+### Bootstrap(自助法)
 
 *简而言之，是通过有放回抽样，近似得到样本的一些信息*
 
@@ -58,18 +60,24 @@ D除去_D作为test
 
 **问题是，0.368是m趋于无穷大的时候得到的，也就是初始数据集跟抽样次数都趋于无穷大，我明白他这里主要是想近似得到e故意设计的，所以我不确定这个结果在普通情况下是否适用。** 不过，作者也只是想表达这个方法还有这一层意思咯。
 
-**总结**
+#### 总结
 
 - 优点：适用于数据集较小，难以有效划分train/test
 - 缺点：抽样过程中，可能有些数据多次出现，有些则少些，那么所产生的数据集有可能就会和初始数据集的分布不一样，这会引入估计误差。所以数据量充足的时候，还是用cv。
 
-#### Precision & Recall & F1
+# 2.3 性能度量
+
+## 错误率(err_rate)和精度(acc)
+
+略
+
+## Precision & Recall & F1
 
 之前我一直很奇怪，既然有**err_rate**和**acc**，还要Precision和Recall干嘛？其实他们是角度不一样。
 
 举个书上的例子，瓜农拉来了一车西瓜，我们用训练好的模型判别是不是好瓜。对分类的结果，我们可以画个**confusion matrix**(混淆矩阵)：
 
-![](./images/confusion_matrix.png)
+![](assets/confusion_matrix.png)
 
 于是
 
@@ -83,6 +91,101 @@ $$Precision = \frac{TP}{TP+FP} \tag{2}$$
 
 $$Recall = \frac{TP}{TP+FN} \tag{3}$$
 
-**二者关系**
+### PR二者关系
 
-一般来说，Precision大，Recall往往会小；Precision小，Recall往往会大。
+由(2)(3)得
+
+$$\frac{P}{R} = \frac{TP+FN}{TP+FP}$$
+
+一般来说，Precision大，Recall往往会小；Precision小，Recall往往会大，但是不一定。还有，$P+R \not= 1$。
+
+### PR曲线
+
+*如何绘制PR曲线*
+
+模型对100个西瓜进行分类预测，预测结果是属于好瓜的概率。
+
+1. 对预测结果排序，则最前面的是模型认为最可能是正例的样本，最后面的事模型认为最不可能是正例的样本
+2. 令threshold=1
+3. 结果>=threshold为正例，结果<=threshold为负例，计算P和R
+4. threshold-=0.1，goto step 3
+
+这样到threshold=0的时候，我们可以得到11组PR，画出PR就能得到PR曲线。当然，不一定要每次都减0.1，可以用依次用预测正例的概率作为阈值；也不一定要从1开始，这些都是你来定的。
+
+下图是PR曲线图：
+
+![](assets/PR曲线.png)
+
+ABC表示三个模型。可以看到A完全包含着C，所以A的性能优于C。
+
+### 如何根据P和R判断模型优劣
+
+**但是** 如果两者有交叉呢？或者说我对P侧重一点，而R对我不太重要呢？有几个办法
+
+1. 比较曲线下的面积。但是不好计算
+2. 取P=R，画出直线与曲线相交，得到**Break-Event Poiont(平衡点)** ，比较平衡点得A优于B。但是BEP还有有些too simple了，所以有了(3)
+3. F1度量，即P和R的**调和平均(harmonic mean)** ：$\frac{1}{F_1} = \frac{1}{2}(\frac{1}{P} + \frac{1}{R})$。注意，比较的是$F$而不是$\frac{1}{F}$
+4. **对P和R侧重不一样** 的时候，就会用到$F_{\beta}$，即**加权调和平均**：$\frac{1}{F_{\beta}}=\frac{1}{1+\beta^2}(\frac{1}{P}+\frac{\beta^2}{R})$。当$\beta>1$时，查全率R更重要；当$\beta<1$时，查准率P更重要。
+5. macro-P/macro-R/macro-F1(宏查准率/宏查全率/宏F1)
+6. micro-P/micro-R/micro-F1(微XX)
+
+5/6见得少，不多讲
+
+## ROC与AUC
+
+### ROC定义
+
+ROC全称是**Receiver Operating Characteristic(受试者工作特征)** ，纵轴TPR(True Positive Rate)，横轴FPR(False Positive Rate)。
+
+$$TPR = \frac{TP}{TP+FN}$$
+
+$$FPR = \frac{FP}{TN+FP}$$
+
+### 绘制ROC曲线
+
+假设有$m^+$个正例，$m^-$个反例。将预测结果排序，从最大开始依次将每个预测结果作为阈值，得到N个$(FPR, TPR)$；若当前作为阈值的预测结果若是TP，则坐标为$(FPR, TPR+\frac{1}{m^+})$;若是FP，则坐标为$(FPR+\frac{1}{m^-}, TPR)$
+
+![ROC1](assets/Chapter2_模型评估与选择-09c34.png)
+
+#### 例子
+
+![ROC2](assets/Chapter2_模型评估与选择-ccff5.png)
+
+![ROC3](assets/Chapter2_模型评估与选择-176ec.png)
+
+### 判断标准
+
+#### 一般情况下
+
+1. 一个曲线A完全包含曲线B，则A优于B
+2. 根据面积，也就是**AUC(Area Under ROC Curve)** 。若曲线不光滑（实际上因为有限的点是会不光滑的），就计算柱状面积。总之能逼近近似就行。
+
+计算AUC除了用面积，还可以用loss。
+
+![](assets/Chapter2_模型评估与选择-de371.png)
+
+$D$表示正反例集合。若正例预测值<反例，则记1个罚分；若正例预测值>反例，记0.5个罚分。最后，因为上式只是描述loss，
+
+$$AUC = 1 - l_{rank}$$
+
+#### Unequal cost 非均等代价
+
+- 由于将没病的人判断为有病和将漏诊有病的人的后果是不一样的，这种代价不一样的情况下，有了unequal cost。
+
+**cost matrix 代价矩阵**
+
+![](assets/Chapter2_模型评估与选择-1c3d0.png)
+
+**cost-sensitive 代价敏感错误率：**
+
+![](assets/Chapter2_模型评估与选择-8346c.png)
+
+上面的公式说的是在二分类情况下，多分类同理。而且有没有发现，这是一个**期望**。
+
+#### cost curve 代价曲线
+
+- WHY cost curve？因为ROC不能**直接**反映出模型期望总体代价
+
+ROC的坐标是(FPR, TPR)，则cost curve的是(0, FPR)和(1, FNR)相连组成的直线。
+
+# 2.4 比较检验
