@@ -1,0 +1,3 @@
+```python
+dense = lil.toarray()
+```
