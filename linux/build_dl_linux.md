@@ -78,3 +78,10 @@ sudo apt install uget aria2
 ```
 
 然后在edit -> setting -> plug-in设置为aria2
+
+## Atom 设置
+
+**插件**
+
+- markdown-image-helper
+- markdown-preview-enhanced
