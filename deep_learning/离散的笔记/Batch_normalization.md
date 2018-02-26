@@ -2,7 +2,7 @@
 
 如$tanh(x)、Relu(x)$这类激活函数会将输入值限制在[-1, 1]、[0, 1]的值域上。这个过程有个问题，就是假设x中有一个值比较大，其他比较小，那么经过激活函数之后，这个值会明显比其他值大，其对应的神经元会很活跃；而其他较小的值对应的神经元的输出就会变得微不足道，就像失去了活性。
 
-还有就是，tanh在$x \notin [-2, 2]$区间里的值都趋近于1，辨识率很低
+还有就是，tanh在[-2, 2]区间外的值都趋近于1，辨识率很低
 
 为了避免这些情况，需要将数据放入激活函数前做Batch normalization，
 
@@ -16,13 +16,4 @@ BN本质上就是使数据的分布服从标准正态分布，这样数据95.449
 
 下图是正态分布：
 
-![](./img/Normal_Distribution_PDF.svg.png)
-
-![](./img/Normal_Distribution_CDF.svg.png)
-
-
-## 参考资料
-
-- https://arxiv.org/pdf/1502.03167
-- https://morvanzhou.github.io/tutorials/machine-learning/ML-intro/3-08-batch-normalization/
-- https://morvanzhou.github.io/tutorials/machine-learning/tensorflow/5-13-BN/
+![from wiki](https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Normal_Distribution_PDF.svg/325px-Normal_Distribution_PDF.svg.png)
