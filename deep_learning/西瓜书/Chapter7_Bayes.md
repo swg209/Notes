@@ -24,7 +24,7 @@ $$R(c_i|x) = \sum_{j=1}^{N} \lambda_{ij} P(c_j|x) \tag{1}$$
 - >Expected loss is the sum of the values of all the possible losses, each multiply by the probability of that loss occurring
 - 但是(1)式想表达的是，将$x$分类为$c_i$所产生的loss，所以应该是所有其他本应分类为$c_j$的样本误分类为$c_i$所产生的loss的期望。
 
-**我们的任务是:**
+**我们的任务是：**
 
 找到$h: X \mapsto Y$，以最小化总体风险
 
@@ -38,4 +38,26 @@ $$h^* (x) = \mathop{arg\ min}\limits_{c \in Y} R(c|x)$$
 - $R(h^* )$被称为**Bayes risk(贝叶斯风险)**
 - $1-R(h^* )$是分类器所能达到的最好的性能，也是理论上限
 
-****
+**令：**
+
+$$
+\lambda_{ij} = \begin{cases}
+0, \ if \ \ i = j; \\
+1, \ otherwise.
+\end{cases}$$
+
+则
+
+$$R(c|x) = 1 - P(c|x)$$
+
+- 其中$c$为x的真实类别
+
+**上面的任务等价为找到$h^* (x)$，使得**
+
+$$h^* (x) = \mathop{arg\ max}\limits_{c \in Y} P(c|x)$$
+
+---
+
+### 生成式模型 vs 判别式模型
+
+之前一直分不清两种模型的区别，因为在我看来，两种模型都能够通过贝叶斯公式统一起来。看了西瓜书才明白区别在哪。
