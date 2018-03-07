@@ -114,3 +114,41 @@ $$h_{nb}(x) = \mathop{arg\ max}\limits_{c \in y} P(c) \prod_{i=1}^{d} P(x_i|c)$$
 $$P(c) = \frac{|D_c| + 1}{D + N}$$
 
 $$P(x_i|c) = \frac{|D_{c,x_i}| + 1}{|D_c| + N_i}$$
+
+### 半朴素贝叶斯分类器
+
+- 朴素贝叶斯的假设属性条件相互独立，这在现实生活中往往很难成立。所以人们松绑一下，**适当考虑一部分属性的相互依赖信息，这样既不用计算完全的联合概率，又保留了和强相关属性之间的依赖关系**，这种就叫“**半朴素贝叶斯分类器**”(semi-naive Bayes classifiers)
+
+**独依赖估计**
+
+假设每个属性最多仅依赖一个其他属性(即"**独依赖估计**"，One-Dependent Estimator，简称ODE)。
+
+这些方法都属于ODE
+
+- **SPODE**(Super-Parent ODE)
+- **TAN**(Tree Augmented naive Bayes)
+- **AODE**(Averaged One-Dependent Estimator)
+
+![](assets/Chapter7_Bayes-dff0d.png)
+
+**TAN**
+
+- 基于最大带权生成树(Maximum weighted spanning tree)
+
+1. 计算两个属性之间的条件互信息
+
+$$I(x_i, x_j|y) = \sum_{x_i,x_j;c \in y} P(x_i, x_j|c) log \frac{P(x_i,x_j|c)}{P(x_i|c)P(x_j|c)}$$
+
+2. 以属性为顶点，两属性的$I(x_i, x_j|y)$为边，构成图
+3. 挑选根节点，将边置为有向
+4. 加入类别节点$y$，增加$y$到各个属性的有向边
+
+---
+
+略一部分
+
+---
+
+### EM算法
+
+- 现实中，有时候训练样本是缺失的，某些属性变量值未知，比如西瓜根蒂已脱落，就无法看出是“蜷缩”还是“硬挺”。那么如何估计呢？
