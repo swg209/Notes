@@ -6,3 +6,5 @@
 4. i.e. Latin expression, id est, means"that is"
 5. e.g. Latin expression, exempli gratia, means"for the sake of example" "for example"
 6. w.r.t., means "with respect to"
+7. impactful algorihm 有效的算法
+8. something brand new 一些全新的东西
