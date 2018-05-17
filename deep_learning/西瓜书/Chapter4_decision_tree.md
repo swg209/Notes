@@ -1,3 +1,33 @@
+### 从头开始的简短介绍
+
+决策树通过某种方法构建树，用树做分类。所以核心是：
+
+1. 如何决定非叶子节点(parent)
+2. 何时产生新的分支
+
+西瓜书介绍的各种解决以上问题的方案，都是以信息论为基础出发的。所以先来搞清楚信息论的基本概念。
+
+- [自信息的定义](https://zh.wikipedia.org/wiki/%E8%87%AA%E4%BF%A1%E6%81%AF)；[为什么会有log](https://www.zhihu.com/question/30828247/answer/64816509)：准确地描述了自信息如此定义的原因，以及为何会有负号
+- [熵](https://zh.wikipedia.org/wiki/%E7%86%B5_(%E4%BF%A1%E6%81%AF%E8%AE%BA))：通俗来说，即随机变量的各种取值的自信息的期望
+
+现在可以描述信息的多少了，但是还需要描述变化：
+
+- [信息增益](https://en.wikipedia.org/wiki/Information_gain_in_decision_trees)：因决策树而产生的概念，决策树根据它来决定用哪个属性作为分支点。
+- [gain ratio](https://en.wikipedia.org/wiki/Information_gain_ratio)：
+
+还有方法从另一个角度制定选取划分属性的标准：
+
+- [Gini index]()：用另一个角度，即纯度，来描述划分
+
+这三个各有各的缺点。
+
+- 信息增益由于有$\frac{|D^v|}{|D|}$，所以会**对$v$比较大的属性有所偏好**
+- 增益率由于有$IV(a)=-\sum_{v=1}^V\frac{|D^v|}{|D|}log_2\frac{|D^v|}{|D|}$，$V$越大，$IV(a)$的值通常会越大，所以会**对$v$比较小的属性有所偏好**
+-
+
+
+---
+
 ### Intro
 
 - 划分选择
@@ -41,7 +71,7 @@ $$Gain(D, a) = H(X) - \sum_{v=1}^{V} \frac{|D^v|}{D} H(D^v)$$
 
 $$Gain\_ratio(D,a) = \frac{Gain(D,a)}{IV(a)}$$
 
-$$IV(a) = \sum_{v=1}^{V} \frac{|D^v|}{|D|} log_2\frac{|D^v|}{|D|}$$
+$$IV(a) = -\sum_{v=1}^{V} \frac{|D^v|}{|D|} log_2\frac{|D^v|}{|D|}$$
 
 $a$指某个属性。$IV$实际上表示了属性$a$的各个取值占比的信息熵。**属性$a$的取值越多，$IV$越大**，这样就解决了上面提到的隐患。
 
