@@ -5,7 +5,7 @@
 本文主要介绍一种度量两个graph之间相似性的度量学习方法。贡献主要有：
 
 1. 使用了graph convolution neural network
-2. 应用了 [8] **Learning local image descriptors with deep siamese and triplet convolutional networks by minimising global loss functions** 中提出的global loss function。该loss func对离群点具有更好的鲁棒性，提供了更好的regularisation(**正则？**)
+2. 应用了 [8] **Learning local image descriptors with deep siamese and triplet convolutional networks by minimising global loss functions** 中提出的global loss function。该loss func对离群点具有更好的鲁棒性，提供了更好的regularisation。
 
 
 ## 主要内容
@@ -27,3 +27,5 @@ $$J^g = (\sigma^{2+} + \sigma^{2-}) + \lambda \mathop{max}(0, m-(\mu^+ - \mu^-))
 - $\lambda$是平衡均值和方差的权重项
 - $m$是均值项的margin
 - 还有可以额外加上FC层参数的$l_2$正则项
+
+这个loss function可以惩罚不同类之间的相似性，鼓励同类之间的相似性。由于它求的是全局的均值和方差，所以称之为global loss functions。
