@@ -10,4 +10,10 @@
 
 #### Step2: Primary capsuel
 
-在这两种结构中，我们对每个capsule使用两个dense residual networks
+在这两种结构中，我们对每个capsule使用两个dense residual networks去得到activation。之所以选择residual blocks而不是线性变换作为变换操作，是因为在医疗保健中，我们对数据的变形没多少的理解，而在CV中，如旋转之类的变换则已被充分研究。Residual blocks允许进行简单的非线性变换而不会使网络过度参数化。
+
+#### Step3: Capsule to capsule computation
+
+EM-capsule network使用EM-routing，这是我们选择的应用在residual blocks上的转换。
+
+假设有两个层$L$和$L+1$
