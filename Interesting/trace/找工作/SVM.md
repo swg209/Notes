@@ -17,18 +17,18 @@ $$\begin{aligned}
 又
 
 $$\begin{aligned}
-|\overrightarrow{w} \cdot \overrightarrow{x_1x_0}| &= |w^0(x_1^0 - x_0^0) + w^1(x_1^1 - x_0^1) + ...| \\
-&= |(w^0x^0_0+w^1x^1_0+...+w^nx^n_0) + (w^0x^0_1+w^1x^1_1+...+w^nx^n_1) | \\
-&= |(w^0x^0_0+w^1x^1_0+...+w^nx^n_0) + b - b + (w^0x^0_1+w^1x^1_1+...+w^nx^n_1) | \\
-&= | 0 - b + (w^0x^0_1+w^1x^1_1+...+w^nx^n_1) | \\
-&= |\overrightarrow{w} \overrightarrow{x} -b|
+|\overrightarrow{w} \cdot \overrightarrow{x_1x_0}| &= |w^0(x_1^0 - x_0^0) + w^1(x_1^1 - x_0^1) + ... + w^n(x_1^n - x_0^n)| \\
+&= |(w^0x^0_1+w^1x^1_1+...+w^nx^n_1) - (w^0x^0_0+w^1x^1_0+...+w^nx^n_0)| \\
+&= |(w^0x^0_1+w^1x^1_1+...+w^nx^n_1) - (w^0x^0_0+w^1x^1_0+...+w^nx^n_0) - b + b | \\
+&= |(w^0x^0_1+w^1x^1_1+...+w^nx^n_1) + 0 + b| \\
+&= |\overrightarrow{w} \overrightarrow{x} + b|
 \end{aligned} \tag{2}$$
 
 将（1）代入（2），有
 
 $$\begin{aligned}
-||\overrightarrow{w}|| d &= |\overrightarrow{w} \overrightarrow{x} -b| \\
-d &= \frac{|\overrightarrow{w} \overrightarrow{x} -b|}{||\overrightarrow{w}||}
+||\overrightarrow{w}|| d &= |\overrightarrow{w} \overrightarrow{x} + b| \\
+d &= \frac{|\overrightarrow{w} \overrightarrow{x} + b|}{||\overrightarrow{w}||}
 \end{aligned}$$
 
 
