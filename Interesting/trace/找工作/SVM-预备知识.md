@@ -32,4 +32,8 @@ d &= \frac{|\overrightarrow{w} \overrightarrow{x} + b|}{||\overrightarrow{w}||}
 \end{aligned}$$
 
 
-**核方法和核技巧**
+**什么是点积/内积？**
+
+点积：$\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}|cos\theta$，它相当于向量$\vec{a}$在向量$\vec{b}$上的投影的长度，跟$|\vec{b}|$做乘法运算。
+
+![](assets/SVM-cfc08.png)
