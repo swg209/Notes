@@ -13,7 +13,7 @@
 现在可以描述信息的多少了，但是还需要描述变化：
 
 - [信息增益](https://en.wikipedia.org/wiki/Information_gain_in_decision_trees)：因决策树而产生的概念，决策树根据它来决定用哪个属性作为分支点。
-- [gain ratio](https://en.wikipedia.org/wiki/Information_gain_ratio)：
+- [增益率 gain ratio](https://en.wikipedia.org/wiki/Information_gain_ratio)：
 
 还有方法从另一个角度制定选取划分属性的标准：
 
