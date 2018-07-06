@@ -1,3 +1,0 @@
-# Factorization Machines
-
-## Abstract
