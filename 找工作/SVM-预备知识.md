@@ -1,6 +1,8 @@
-## SVM
+# SVM
 
 通俗来讲就是求一个能够划分数据的超平面，并且使得平面位于两类数据的正中间，使得间隔最大化。
+
+## 预备知识
 
 **多维点到超平面距离**
 
@@ -27,8 +29,8 @@ $$\begin{aligned}
 将（1）代入（2），有
 
 $$\begin{aligned}
-||\overrightarrow{w}|| d &= |\overrightarrow{w} \overrightarrow{x} + b| \\
-d &= \frac{|\overrightarrow{w} \overrightarrow{x} + b|}{||\overrightarrow{w}||}
+||\vec{w}|| d &= |\vec{w} \vec{x} + b| \\
+d &= \frac{|\vec{w} \vec{x} + b|}{||\vec{w}||}
 \end{aligned}$$
 
 
@@ -37,3 +39,22 @@ d &= \frac{|\overrightarrow{w} \overrightarrow{x} + b|}{||\overrightarrow{w}||}
 点积：$\vec{a} \cdot \vec{b} = |\vec{a}||\vec{b}|cos\theta$，它相当于向量$\vec{a}$在向量$\vec{b}$上的投影的长度，跟$|\vec{b}|$做乘法运算。
 
 ![](assets/SVM-cfc08.png)
+
+---
+
+## 正式开讲
+
+设超平面$w^Tx+b=0$，则有
+
+$$
+\begin{cases}
+w^Tx+b \ge 0, & y_i = +1 \\
+w^Tx+b \le 0, & y_i = -1
+\end{cases}
+\tag{3}$$
+
+找距离超平面最近的几个样本
+
+![](assets/SVM-预备知识-ccc36.png)
+
+- 对偶问题——将SVM的优化问题用拉格朗日乘子法得到其对偶问题
