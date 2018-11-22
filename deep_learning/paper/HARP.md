@@ -89,9 +89,3 @@ $$G_s = (V_s, E_s), (|V_s| \ll |V|, |E_s| \ll |E|)$$
 ### Hybrid Coarsening Scheme
 
 一直做coarsening直到图足够小
-
-### Embedding Prolongation
-
-结合$G_{i+1}$来初始化$G_i$。作者观察到
-
-- $v \in G_{i+1}$
