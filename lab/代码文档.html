@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>代码文档.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+	font-size: 14px;
+	padding: 0 12px;
+	line-height: 22px;
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	color: #4080D0;
+	text-decoration: none;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+	font-size: inherit;
+	line-height: auto;
+}
+
+a:hover {
+	color: #4080D0;
+	text-decoration: underline;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left: 5px solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 14px;
+	line-height: 19px;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+.mac code {
+	font-size: 12px;
+	line-height: 18px;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+/** Theming */
+
+.vscode-light,
+.vscode-light pre code {
+	color: rgb(30, 30, 30);
+}
+
+.vscode-dark,
+.vscode-dark pre code {
+	color: #DDD;
+}
+
+.vscode-high-contrast,
+.vscode-high-contrast pre code {
+	color: white;
+}
+
+.vscode-light code {
+	color: #A31515;
+}
+
+.vscode-dark code {
+	color: #D7BA7D;
+}
+
+.vscode-light pre:not(.hljs),
+.vscode-light code > div {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre:not(.hljs),
+.vscode-dark code > div {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre:not(.hljs),
+.vscode-high-contrast code > div {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+.vscode-light blockquote,
+.vscode-dark blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.vscode-high-contrast blockquote {
+	background: transparent;
+	border-color: #fff;
+}
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family:  "Meiryo", "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+</head>
+<body>
+<h1 id="%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95">文件目录</h1>
+<ul>
+<li>GCN-ForceDirected
+<ul>
+<li>dymgcn-worked-date1.07（capsule-gcn节点分类代码以及利用capsule-gcn逼近力导引算法）
+<ul>
+<li>data（cora、citeseer、pumbed数据）</li>
+<li>Primary school（数据集）</li>
+<li>calpos.py（利用力导引算法计算图的可视化结果）</li>
+<li>capnets.py（hinton-capsnet部分核心源码）</li>
+<li>draw.py（用于可视化计算结果）</li>
+<li>force.py（利用capsule-gcn逼近力导引算法）</li>
+<li>graphlet_count.py（计算不同graphlet的出现频率）</li>
+<li>layers.py（不同神经网络层的代码，包括dense、gcn、capsule-gcn）</li>
+<li>metrics.py（loss函数、评价指标）</li>
+<li>paper_exp.py（capsule-gcn接点分类代码）</li>
+<li>train.py（原gcn的train文件）</li>
+<li>utils.py（数据处理代码）</li>
+</ul>
+</li>
+<li>force-directed-graph（力导引布局算法源码）
+<ul>
+<li>cal_pos.py（生成图网络数据，并计算其可视化结果）</li>
+<li>force_directed_graph.py和force_utils.py（力导引算法的代码）</li>
+</ul>
+</li>
+<li>graphlet_counting（计算图基元源码）</li>
+<li>graphnet_force（利用graphnet拟合力导引布局算法的代码）
+<ul>
+<li>train.py（训练文件）</li>
+<li>utils.py（工具文件）</li>
+<li>visual.py（画图函数）</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="%E8%8A%82%E7%82%B9%E5%88%86%E7%B1%BB%E5%AE%9E%E9%AA%8C">节点分类实验</h1>
+<h2 id="%E5%8F%82%E6%95%B0">参数</h2>
+<ul>
+<li>model1：gcn、gcn_cheby、dense、dr_gcn_cheby、dr_gcn 模型
+<ul>
+<li>若使用gcn gcn_cheby dense，需要将paper_exp.py中下面部分更改<pre class="hljs"><code><div>#model1 = model_func1(placeholders1, adj=adj, input_shape=features[2], logging=logging, act=tf.nn.relu)
+model1 = model_func1(placeholders1, features[2][1], logging=logging)
+</div></code></pre>
+</li>
+<li>若使用dr_gcn等，需要将paper_exp.py中下面部分更改<pre class="hljs"><code><div>model1 = model_func1(placeholders1, adj=adj, input_shape=features[2], logging=logging, act=tf.nn.relu)
+#model1 = model_func1(placeholders1, features[2][1], logging=logging)
+</div></code></pre>
+</li>
+</ul>
+</li>
+<li>dataset：cora、citeseer、pubmed、primaryschool 数据集</li>
+<li>dist_type：cos、eud casule的相似性计算方式</li>
+<li>learning_rate：学习率</li>
+<li>epochs：训练轮数</li>
+<li>hidden1：隐藏层特征为度</li>
+<li>dropout：dropout rate</li>
+<li>weight_decay：loss函数中的L2项的权重系数</li>
+<li>max_degree：chebyshev的K跳值</li>
+</ul>
+<h2 id="%E6%95%B0%E6%8D%AE%E5%88%92%E5%88%86%E6%96%B9%E5%BC%8F">数据划分方式</h2>
+<p>按GCN原论文的打标签方式：</p>
+<pre class="hljs"><code><div>使用utils.py的<span class="hljs-number">88</span><span class="hljs-number">-93</span>行，将<span class="hljs-number">96</span>行注释
+</div></code></pre>
+<p>随机抽样下不同标签率的打标签方式：</p>
+<pre class="hljs"><code><div>注释utils.py的<span class="hljs-number">88</span><span class="hljs-number">-93</span>行，使用<span class="hljs-number">96</span>行
+其中标签率通过paper_exp.py的load_data参数<span class="hljs-number">0.01</span>来更改标签率
+adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask = load_data(FLAGS.dataset, rate, <span class="hljs-number">0.01</span>)
+</div></code></pre>
+<h2 id="%E8%BF%90%E8%A1%8C">运行</h2>
+<p>直接运行paper_exp.py</p>
+<h1 id="capsule-gcn%E6%8B%9F%E5%90%88%E5%8A%9B%E5%AF%BC%E5%BC%95%E7%AE%97%E6%B3%95">Capsule-GCN拟合力导引算法</h1>
+<h2 id="%E5%85%B6%E4%BB%96">其他</h2>
+<p>跟上面差不多</p>
+<h2 id="%E8%BF%90%E8%A1%8C">运行</h2>
+<p>直接运行force.py</p>
+
+</body>
+</html>
